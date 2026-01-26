@@ -19,6 +19,7 @@ Platforma completa para gestão de construtoras, integrando Engenharia, Financei
 - **Frontend**: React, Vite, TypeScript, Tailwind CSS v4.
 - **UI**: Shadcn UI, Recharts, Lucide Icons.
 - **Backend**: Node.js, Fastify, Prisma, SQLite.
+- **Pagamentos**: [Integração ASAAS](docs/INTEGRACAO_ASAAS.md) (Planejado).
 - **Testes**: Vitest, React Testing Library.
 
 ## Como Rodar o Projeto
