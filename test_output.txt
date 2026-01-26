@@ -1,0 +1,376 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/_RodrigoPiresDev/_programacao/_kubiceng[39m
+
+[90mstderr[2m | src/app/App.test.tsx[2m > [22m[2mSystem Navigation Flow[2m > [22m[2mRegistration Modal opens
+[22m[39mWarning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
+
+Check the render method of `SlotClone`.
+    at DialogOverlay (D:/_RodrigoPiresDev/_programacao/_kubiceng/src/app/components/ui/dialog.tsx:53:3)
+    at file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-slot/dist/index.mjs:25:11
+    at file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-slot/dist/index.mjs:6:11
+    at file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-primitive/dist/index.mjs:26:13
+    at file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-portal/dist/index.mjs:11:22
+    at Presence (file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-presence/dist/index.mjs:19:11)
+    at Provider (file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-context/dist/index.mjs:27:15)
+    at DialogPortal (file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-dialog/dist/index.mjs:84:11)
+    at DialogPortal (D:/_RodrigoPiresDev/_programacao/_kubiceng/src/app/components/ui/dialog.tsx:35:6)
+    at DialogContent (D:/_RodrigoPiresDev/_programacao/_kubiceng/src/app/components/ui/dialog.tsx:77:3)
+    at Provider (file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-context/dist/index.mjs:27:15)
+    at Dialog (file:///D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@radix-ui/react-dialog/dist/index.mjs:25:5)
+    at Dialog (D:/_RodrigoPiresDev/_programacao/_kubiceng/src/app/components/ui/dialog.tsx:17:6)
+    at div
+    at LandingPage (D:/_RodrigoPiresDev/_programacao/_kubiceng/src/app/pages/landing-page.tsx:15:24)
+    at App (D:/_RodrigoPiresDev/_programacao/_kubiceng/src/app/App.tsx:14:73)
+
+ [31m❯[39m src/app/App.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1275[2mms[22m[39m
+[31m     [31m×[31m Starts on Landing Page and navigates to Dashboard then Logout[39m[33m 1131[2mms[22m[39m
+     [32m✓[39m Registration Modal opens[32m 142[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/App.test.tsx[2m > [22mSystem Navigation Flow[2m > [22mStarts on Landing Page and navigates to Dashboard then Logout
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements with the text: /Visão Geral/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<div[39m
+  [33mclass[39m=[32m"text-xs text-white/60"[39m
+[36m>[39m
+  [0mVisão Geral[0m
+[36m</div>[39m
+
+Ignored nodes: comments, script, style
+[36m<p[39m
+  [33mclass[39m=[32m"text-gray-600"[39m
+[36m>[39m
+  [0mVisão geral de todas as obras e indicadores em tempo real[0m
+[36m</p>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"h-screen bg-[#0A2E50] text-white flex flex-col transition-all duration-300 w-72"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-6 border-b border-white/10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"KUBIC Logo"[39m
+                [33mclass[39m=[32m"transition-all object-contain w-40"[39m
+                [33msrc[39m=[32m"/src/assets/8f30dd8152d74b306dc9f5214b67e2bfbf83636d.png"[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 rounded-md text-white hover:bg-white/10"[39m
+              [33mdata-slot[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"lucide lucide-chevron-left w-4 h-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m15 18-6-6 6-6"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33mclass[39m=[32m"flex-1 p-4 space-y-2 overflow-y-auto"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-white/10 bg-[#4A9EFF] shadow-lg"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard w-5 h-5 flex-shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1 text-left"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"font-medium"[39m
+              [36m>[39m
+                [0mDashboard[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-xs text-white/60"[39m
+              [36m>[39m
+                [0mVisão Geral[0m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-white/10"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-text w-5 h-5 flex-shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M10 9H8"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 13H8"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 17H8"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1 text-left"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"font-medium"[39m
+              [36m>[39m
+                [0mEngenharia[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-xs text-white/60"[39m
+              [36m>[39m
+                [0mGED & Cronograma[0m
+              [36m</div>[39...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex h-screen bg-gray-50"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"h-screen bg-[#0A2E50] text-white flex flex-col transition-all duration-300 w-72"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-6 border-b border-white/10"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"KUBIC Logo"[39m
+                [33mclass[39m=[32m"transition-all object-contain w-40"[39m
+                [33msrc[39m=[32m"/src/assets/8f30dd8152d74b306dc9f5214b67e2bfbf83636d.png"[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 rounded-md text-white hover:bg-white/10"[39m
+              [33mdata-slot[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"lucide lucide-chevron-left w-4 h-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m15 18-6-6 6-6"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33mclass[39m=[32m"flex-1 p-4 space-y-2 overflow-y-auto"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-white/10 bg-[#4A9EFF] shadow-lg"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-layout-dashboard w-5 h-5 flex-shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"9"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"12"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"5"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1 text-left"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"font-medium"[39m
+              [36m>[39m
+                [0mDashboard[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-xs text-white/60"[39m
+              [36m>[39m
+                [0mVisão Geral[0m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-white/10"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"lucide lucide-file-text w-5 h-5 flex-shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 2v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M10 9H8"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 13H8"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M16 17H8"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1 text-left"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"font-medium"[39m
+              [36m>[39m
+                [0mEngenharia[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-xs text-white/60"[39m
+              [36m>[39m
+                [0mGED & Cronograma[0m
+              [36m</div>[39...
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m86:33[22m[39m
+[36m [2m❯[22m src/app/App.test.tsx:[2m22:25[22m[39m
+    [90m 20| [39m    [90m// 3. Verify Dashboard is visible[39m
+    [90m 21| [39m    [90m// We look for Sidebar elements like "Dashboard" or "Engenharia"[39m
+    [90m 22| [39m    expect(await screen.findByText(/Visão Geral/i)).toBeInTheDocument(…
+    [90m   | [39m                        [31m^[39m
+    [90m 23| [39m    
+    [90m 24| [39m    [90m// 4. Perform Logout[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 23:00:21
+[2m   Duration [22m 3.14s[2m (transform 268ms, setup 110ms, import 976ms, tests 1.27s, environment 633ms)[22m
+

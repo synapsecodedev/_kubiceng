@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  version   String
+  status    String   // 'aprovado', 'revisao', 'em_analise'
+  date      DateTime @default(now())
+  fileUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  scheduleItems ScheduleItem[]
+  budgetItems   BudgetItem[]
+}
+
+model ScheduleItem {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  
+  stage     String   // 'Fundação', 'Estrutura', etc.
+  startDate DateTime
+  endDate   DateTime
+  progress  Int      @default(0)
+  status    String   // 'concluido', 'andamento', 'nao_iniciado'
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BudgetItem {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  
+  item           String   // 'Fundação e Estrutura', etc.
+  budgetedAmount Float
+  realizedAmount Float
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
