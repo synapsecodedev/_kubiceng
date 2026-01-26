@@ -27,7 +27,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   
 
   
+  
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   
   const calculateCustomPrice = () => {
@@ -200,12 +202,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
       {/* Header/Nav */}
       <header className="fixed top-0 w-full bg-[#0A2E50]/80 backdrop-blur-md border-b border-white/10 z-50 transition-all">
-import { Menu } from 'lucide-react';
 
-// ... inside component state
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-// ... inside Header JSX
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={logo} alt="KubicEng Logo" className="h-8 w-auto brightness-0 invert" />
