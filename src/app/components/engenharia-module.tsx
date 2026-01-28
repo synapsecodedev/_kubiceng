@@ -4,14 +4,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/ta
 import { FileText, Upload, FolderOpen, Calendar, DollarSign } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Progress } from '@/app/components/ui/progress';
+import { useEffect, useState } from 'react';
+import { getProjects, Project } from '@/services/api';
 
 export function EngenhariaModule() {
-  const projetos = [
-    { nome: 'Projeto Arquitetônico', versao: 'v3.2', status: 'aprovado', data: '20/01/2026' },
-    { nome: 'Projeto Estrutural', versao: 'v2.1', status: 'revisao', data: '18/01/2026' },
-    { nome: 'Projeto Elétrico', versao: 'v1.5', status: 'aprovado', data: '15/01/2026' },
-    { nome: 'Projeto Hidráulico', versao: 'v1.8', status: 'aprovado', data: '12/01/2026' },
-  ];
+  const [projetos, setProjetos] = useState<Project[]>([]);
+
+  useEffect(() => {
+    getProjects().then(data => setProjetos(data));
+  }, []);
 
   const cronograma = [
     { etapa: 'Fundação', inicio: '01/01/2026', fim: '28/02/2026', progresso: 100, status: 'concluido' },
@@ -69,13 +70,13 @@ export function EngenhariaModule() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Projetos - Residencial Torres do Mar</h3>
             <div className="space-y-3">
-              {projetos.map((projeto, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+              {projetos.map((projeto) => (
+                <div key={projeto.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                   <div className="flex items-center gap-3">
                     <FileText className="w-5 h-5 text-[#0A2E50]" />
                     <div>
-                      <h4 className="font-medium">{projeto.nome}</h4>
-                      <p className="text-sm text-gray-500">Versão {projeto.versao} • {projeto.data}</p>
+                      <h4 className="font-medium">{projeto.name}</h4>
+                      <p className="text-sm text-gray-500">Versão {projeto.version} • {new Date(projeto.date).toLocaleDateString('pt-BR')}</p>
                     </div>
                   </div>
                   <Badge variant={projeto.status === 'aprovado' ? 'default' : 'outline'}>
