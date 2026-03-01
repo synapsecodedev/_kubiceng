@@ -14,7 +14,7 @@ import { Slider } from '@/app/components/ui/slider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Switch } from '@/app/components/ui/switch';
 import { cn } from '@/app/components/ui/utils';
-import logo from '../../assets/8f30dd8152d74b306dc9f5214b67e2bfbf83636d.png';
+import logo from '../../assets/kubiceng-logo.png';
 import { FaWhatsapp } from 'react-icons/fa';
 
 interface LandingPageProps {
@@ -299,7 +299,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             <DialogDescription>Conheça o KubicEng em detalhes.</DialogDescription>
           </DialogHeader>
           <div className="aspect-video w-full">
-            <iframe className="w-full h-full" src="https://www.youtube.com/embed/93llrC1J5Lc?autoplay=1&rel=0"
+            <iframe className="w-full h-full" src="https://www.youtube.com/embed/RbliK3D1H_k?autoplay=1&rel=0"
               title="Apresentação KubicEng" frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
           </div>

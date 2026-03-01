@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import logo from '../../assets/8f30dd8152d74b306dc9f5214b67e2bfbf83636d.png';
+import logo from '../../assets/kubiceng-logo.png';
 
 interface LegalPageProps {
   onBack: () => void;

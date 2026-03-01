@@ -2,7 +2,7 @@ import { LayoutDashboard, FileText, ShoppingCart, Hammer, DollarSign, Users, Pac
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/app/components/ui/utils';
 import { useState } from 'react';
-import logoKubic from "../../assets/8f30dd8152d74b306dc9f5214b67e2bfbf83636d.png";
+import logoKubic from "../../assets/kubiceng-logo.png";
 
 export type ModuleType = 'dashboard' | 'engenharia' | 'suprimentos' | 'execucao' | 'financeiro' | 'pessoas' | 'comercial';
 
