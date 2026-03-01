@@ -30,26 +30,52 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
       "h-screen bg-[#0A2E50] text-white flex flex-col transition-all duration-300",
       collapsed ? "w-20" : "w-72"
     )}>
-      {/* Header */}
-      <div className="p-6 border-b border-white/10">
+        {/* Header */}
+      <div className="p-5 border-b border-white/10">
         <div className="flex items-center justify-between">
-          <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-            <img 
-              src={logoKubic} 
-              alt="KUBIC Logo" 
-              className={cn("transition-all object-contain", collapsed ? "w-10 h-10" : "w-40")}
-            />
+          <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
+            {/* Ícone da logo — container branco para PNG com fundo branco */}
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+              <img
+                src={logoKubic}
+                alt="KubicEng Logo"
+                className="w-7 h-7 object-contain"
+              />
+            </div>
+            {!collapsed && (
+              <div className="flex flex-col leading-none">
+                <span className="text-white font-bold text-base tracking-tight">
+                  Kubic<span className="text-[#4A9EFF]">Eng</span>
+                </span>
+                <span className="text-white/40 text-xs">Gestão de Obras</span>
+              </div>
+            )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/10"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
+          {!collapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10 ml-auto"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          )}
         </div>
+        {collapsed && (
+          <div className="flex justify-center mt-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
+
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
