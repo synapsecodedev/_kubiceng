@@ -19,6 +19,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 
 interface LandingPageProps {
   onLogin: () => void;
+  onNavigate: (page: string) => void;
 }
 
 // ============================================================
@@ -53,7 +54,7 @@ function BlueprintGrid() {
 // ============================================================
 // RODAPÉ PADRÃO SYNAPSE CODE
 // ============================================================
-function Footer() {
+function Footer({ onNavigate }: { onNavigate: (page: string) => void }) {
   return (
     <footer className="bg-[#0a0a0a] text-gray-400 border-t border-white/5">
       <div className="container mx-auto px-6 pt-14 pb-8">
@@ -90,11 +91,10 @@ function Footer() {
           <div>
             <h4 className="text-white text-sm font-semibold mb-4">Produto</h4>
             <ul className="space-y-3 text-sm">
-              {['Funcionalidades', 'Preços', 'Atualizações', 'Roadmap'].map(item => (
-                <li key={item}>
-                  <a href="#" className="text-gray-500 hover:text-blue-400 transition-colors">{item}</a>
-                </li>
-              ))}
+              <li><a href="#funcionalidades" className="text-gray-500 hover:text-blue-400 transition-colors">Funcionalidades</a></li>
+              <li><a href="#planos" className="text-gray-500 hover:text-blue-400 transition-colors">Preços</a></li>
+              <li><a href="#funcionalidades" className="text-gray-500 hover:text-blue-400 transition-colors">Atualizações</a></li>
+              <li><a href="#planos" className="text-gray-500 hover:text-blue-400 transition-colors">Roadmap</a></li>
             </ul>
           </div>
 
@@ -102,11 +102,10 @@ function Footer() {
           <div>
             <h4 className="text-white text-sm font-semibold mb-4">Empresa</h4>
             <ul className="space-y-3 text-sm">
-              {['Sobre Nós', 'Blog', 'Carreiras', 'Imprensa'].map(item => (
-                <li key={item}>
-                  <a href="#" className="text-gray-500 hover:text-blue-400 transition-colors">{item}</a>
-                </li>
-              ))}
+              <li><a href="#contato" className="text-gray-500 hover:text-blue-400 transition-colors">Sobre Nós</a></li>
+              <li><a href="#contato" className="text-gray-500 hover:text-blue-400 transition-colors">Blog</a></li>
+              <li><a href="#contato" className="text-gray-500 hover:text-blue-400 transition-colors">Carreiras</a></li>
+              <li><a href="#contato" className="text-gray-500 hover:text-blue-400 transition-colors">Imprensa</a></li>
             </ul>
           </div>
 
@@ -143,9 +142,9 @@ function Footer() {
             <span className="bg-white/5 text-gray-500 px-2 py-0.5 rounded text-xs">v1.0.0</span>
           </div>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-gray-400 transition-colors">Termos de Uso</a>
-            <a href="#" className="hover:text-gray-400 transition-colors">Política de Privacidade</a>
-            <a href="#" className="hover:text-gray-400 transition-colors">LGPD</a>
+            <button onClick={() => onNavigate('termos')} className="hover:text-gray-400 transition-colors">Termos de Uso</button>
+            <button onClick={() => onNavigate('privacidade')} className="hover:text-gray-400 transition-colors">Política de Privacidade</button>
+            <button onClick={() => onNavigate('lgpd')} className="hover:text-gray-400 transition-colors">LGPD</button>
           </div>
         </div>
       </div>
@@ -178,7 +177,7 @@ const stats = [
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
-export function LandingPage({ onLogin }: LandingPageProps) {
+export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
   const [customUsers, setCustomUsers] = useState([10]);
   const [customProjects, setCustomProjects] = useState([5]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -643,7 +642,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       </section>
 
       {/* ===== RODAPÉ SYNAPSE CODE ===== */}
-      <Footer />
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }
