@@ -71,15 +71,15 @@ function Footer() {
               A plataforma completa para gestão de construtoras. Controle total do orçamento ao canteiro de obras.
             </p>
             <div className="flex items-center gap-3">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+              <a href="https://instagram.com/_synapsecode" target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+              <a href="https://www.linkedin.com/company/synapsecodedev" target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
                 <Linkedin className="w-4 h-4" />
               </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"
+              <a href="https://youtube.com/@SynapseCodedev" target="_blank" rel="noopener noreferrer"
                 className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
                 <Youtube className="w-4 h-4" />
               </a>

@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, FileText, ShoppingCart, Hammer, DollarSign, Users, Package, Settings, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Hammer, DollarSign, Users, Package, Settings, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/app/components/ui/utils';
 import { useState } from 'react';
