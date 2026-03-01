@@ -61,10 +61,11 @@ function Footer() {
 
           {/* Col 1 — Logo + descrição + social */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-                <img src={logo} alt="KubicEng" className="h-5 w-auto brightness-0 invert" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <img src={logo} alt="KubicEng" className="h-7 w-auto" />
               </div>
+              <span className="text-white font-bold text-base tracking-tight">Kubic<span className="text-blue-400">Eng</span></span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-5">
               A plataforma completa para gestão de construtoras. Controle total do orçamento ao canteiro de obras.
@@ -320,8 +321,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       <header className="fixed top-0 w-full bg-[#04111e]/90 backdrop-blur-md border-b border-white/5 z-50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-500/10 border border-blue-500/20 rounded-md flex items-center justify-center">
-              <img src={logo} alt="KubicEng Logo" className="h-5 w-auto brightness-0 invert" />
+            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+              <img src={logo} alt="KubicEng Logo" className="h-6 w-auto" />
             </div>
             <span className="text-lg font-bold tracking-tight">
               <span className="text-white">Kubic</span><span className="text-blue-400">Eng</span>
