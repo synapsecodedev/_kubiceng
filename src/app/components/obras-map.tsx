@@ -1,68 +1,59 @@
 import { Card } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
-import { MapPin, Calendar, DollarSign, TrendingUp } from 'lucide-react';
+import { MapPin, Calendar, DollarSign } from 'lucide-react';
 import { Progress } from '@/app/components/ui/progress';
+import { useEffect, useState } from 'react';
+import { getProjects, getBudget, Project } from '@/services/api';
 
-interface Obra {
+interface ObraDisplay {
   id: string;
   nome: string;
-  localizacao: string;
-  status: 'ativa' | 'atrasada' | 'concluida' | 'pausada';
+  status: string;
   progresso: number;
   orcamento: string;
   prazo: string;
-  engenheiro: string;
 }
 
-const obras: Obra[] = [
-  {
-    id: '1',
-    nome: 'Residencial Torres do Mar',
-    localizacao: 'Fortaleza, CE',
-    status: 'ativa',
-    progresso: 68,
-    orcamento: 'R$ 15.5M',
-    prazo: '12/2026',
-    engenheiro: 'João Silva'
-  },
-  {
-    id: '2',
-    nome: 'Edifício Comercial Plaza',
-    localizacao: 'São Paulo, SP',
-    status: 'atrasada',
-    progresso: 42,
-    orcamento: 'R$ 22.3M',
-    prazo: '06/2026',
-    engenheiro: 'Maria Santos'
-  },
-  {
-    id: '3',
-    nome: 'Condomínio Verde Vida',
-    localizacao: 'Rio de Janeiro, RJ',
-    status: 'ativa',
-    progresso: 85,
-    orcamento: 'R$ 8.7M',
-    prazo: '03/2026',
-    engenheiro: 'Carlos Oliveira'
-  },
-  {
-    id: '4',
-    nome: 'Shopping Center Norte',
-    localizacao: 'Brasília, DF',
-    status: 'ativa',
-    progresso: 35,
-    orcamento: 'R$ 45.2M',
-    prazo: '12/2027',
-    engenheiro: 'Ana Costa'
-  },
-];
-
 export function ObrasMap() {
-  const statusConfig = {
-    ativa: { label: 'Em Andamento', color: 'bg-green-500' },
-    atrasada: { label: 'Atrasada', color: 'bg-red-500' },
-    concluida: { label: 'Concluída', color: 'bg-blue-500' },
-    pausada: { label: 'Pausada', color: 'bg-yellow-500' },
+  const [obras, setObras] = useState<ObraDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProjects()
+      .then(async (projetos: Project[]) => {
+        const obrasComDados = await Promise.all(
+          projetos.map(async (p) => {
+            let progressoMedio = 0;
+            let orcamentoTotal = 'N/A';
+            try {
+              const budget = await getBudget(p.id);
+              if (budget.length > 0) {
+                const totalOrcado = budget.reduce((s, b) => s + b.budgetedAmount, 0);
+                orcamentoTotal = `R$ ${(totalOrcado / 1_000_000).toFixed(1)}M`;
+              }
+            } catch {}
+            return {
+              id: p.id,
+              nome: p.name,
+              status: p.status,
+              progresso: progressoMedio,
+              orcamento: orcamentoTotal,
+              prazo: p.date
+                ? new Date(p.date).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' })
+                : '—',
+            };
+          })
+        );
+        setObras(obrasComDados);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    aprovado: { label: 'Aprovado', color: 'bg-green-500' },
+    revisao: { label: 'Em Revisão', color: 'bg-yellow-500' },
+    em_analise: { label: 'Em Análise', color: 'bg-blue-500' },
+    atrasado: { label: 'Atrasado', color: 'bg-red-500' },
   };
 
   return (
@@ -72,54 +63,58 @@ export function ObrasMap() {
         <p className="text-sm text-gray-500">Visão geográfica das obras ativas</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {obras.map((obra) => (
-          <Card key={obra.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900 mb-1">{obra.nome}</h4>
-                <div className="flex items-center text-sm text-gray-600 gap-1">
-                  <MapPin className="w-3 h-3" />
-                  <span>{obra.localizacao}</span>
+      {loading ? (
+        <p className="text-sm text-gray-500">Carregando obras...</p>
+      ) : obras.length === 0 ? (
+        <p className="text-sm text-gray-500 text-center py-8">Nenhuma obra cadastrada.</p>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {obras.map((obra) => {
+            const cfg = statusConfig[obra.status] ?? { label: obra.status, color: 'bg-gray-500' };
+            return (
+              <Card key={obra.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 mb-1">{obra.nome}</h4>
+                    <div className="flex items-center text-sm text-gray-600 gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span>Versão {obra.prazo}</span>
+                    </div>
+                  </div>
+                  <Badge className={cfg.color}>{cfg.label}</Badge>
                 </div>
-              </div>
-              <Badge className={statusConfig[obra.status].color}>
-                {statusConfig[obra.status].label}
-              </Badge>
-            </div>
 
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                <span>Progresso Físico</span>
-                <span className="font-semibold">{obra.progresso}%</span>
-              </div>
-              <Progress value={obra.progresso} className="h-2" />
-            </div>
+                {obra.progresso > 0 && (
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                      <span>Progresso Físico</span>
+                      <span className="font-semibold">{obra.progresso}%</span>
+                    </div>
+                    <Progress value={obra.progresso} className="h-2" />
+                  </div>
+                )}
 
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-400" />
-                <div>
-                  <p className="text-xs text-gray-500">Orçamento</p>
-                  <p className="font-medium">{obra.orcamento}</p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Orçamento</p>
+                      <p className="font-medium">{obra.orcamento}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Data</p>
+                      <p className="font-medium">{obra.prazo}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <div>
-                  <p className="text-xs text-gray-500">Prazo</p>
-                  <p className="font-medium">{obra.prazo}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500">Engenheiro Responsável</p>
-              <p className="text-sm font-medium">{obra.engenheiro}</p>
-            </div>
-          </Card>
-        ))}
-      </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }

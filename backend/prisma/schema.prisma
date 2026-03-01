@@ -7,6 +7,8 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+// ========== ENGENHARIA ==========
+
 model Project {
   id        String   @id @default(uuid())
   name      String
@@ -16,7 +18,7 @@ model Project {
   fileUrl   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   scheduleItems ScheduleItem[]
   budgetItems   BudgetItem[]
 }
@@ -24,14 +26,14 @@ model Project {
 model ScheduleItem {
   id        String   @id @default(uuid())
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id])
-  
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   stage     String   // 'Fundação', 'Estrutura', etc.
   startDate DateTime
   endDate   DateTime
   progress  Int      @default(0)
   status    String   // 'concluido', 'andamento', 'nao_iniciado'
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -39,12 +41,204 @@ model ScheduleItem {
 model BudgetItem {
   id        String   @id @default(uuid())
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id])
-  
-  item           String   // 'Fundação e Estrutura', etc.
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  item           String
   budgetedAmount Float
   realizedAmount Float
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== EXECUÇÃO ==========
+
+model Rdo {
+  id          String   @id @default(uuid())
+  obra        String
+  data        DateTime @default(now())
+  climaManha  String   // 'sol', 'chuva', 'nublado'
+  climaTarde  String
+  efetivoProprio   Int @default(0)
+  efetivoTerceiro  Int @default(0)
+  atividades  String   // JSON array as string
+  fotos       Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FichaVerificacao {
+  id           String   @id @default(uuid())
+  titulo       String
+  obra         String
+  responsavel  String
+  status       String   // 'aprovado', 'pendente'
+  data         DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ItemEstoque {
+  id             String   @id @default(uuid())
+  material       String
+  qtdAtual       Float
+  qtdMinima      Float
+  unidade        String
+  ultimaEntrada  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movimentacoes MovimentacaoEstoque[]
+}
+
+model MovimentacaoEstoque {
+  id            String   @id @default(uuid())
+  itemEstoqueId String
+  itemEstoque   ItemEstoque @relation(fields: [itemEstoqueId], references: [id], onDelete: Cascade)
+  tipo          String   // 'entrada', 'saida'
+  quantidade    Float
+  observacao    String?
+
+  createdAt DateTime @default(now())
+}
+
+// ========== FINANCEIRO ==========
+
+model ContaPagar {
+  id          String   @id @default(uuid())
+  fornecedor  String
+  valor       Float
+  vencimento  DateTime
+  status      String   // 'pendente', 'pago', 'vencido'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Medicao {
+  id          String   @id @default(uuid())
+  empreiteiro String
+  servico     String
+  periodo     String
+  executado   String   // ex: '68%'
+  valor       Float
+  retencao    Float
+  liquido     Float
+  status      String   // 'aprovado', 'pendente'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== PESSOAS ==========
+
+model Funcionario {
+  id        String   @id @default(uuid())
+  nome      String
+  funcao    String
+  obra      String
+  tipo      String   // 'proprio', 'terceiro'
+  status    String   // 'ativo', 'treinamento_vencido', 'inativo'
+  nr35      String?  // data de validade
+  nr10      String?
+
+  registrosPonto RegistroPonto[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RegistroPonto {
+  id            String   @id @default(uuid())
+  funcionarioId String
+  funcionario   Funcionario @relation(fields: [funcionarioId], references: [id], onDelete: Cascade)
+  data          DateTime @default(now())
+  entrada       String?
+  saidaAlmoco   String?
+  voltaAlmoco   String?
+  saida         String?
+  totalHoras    String?
+
+  createdAt DateTime @default(now())
+}
+
+model ItemEpi {
+  id                   String   @id @default(uuid())
+  item                 String
+  qtdDisponivel        Int
+  qtdMinima            Int
+  ultimaDistribuicao   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== SUPRIMENTOS ==========
+
+model Requisicao {
+  id          String   @id @default(uuid())
+  item        String
+  obra        String
+  solicitante String
+  valor       Float
+  status      String   // 'pendente_aprovacao', 'cotacao', 'aprovado', 'cancelado'
+
+  cotacoes Cotacao[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cotacao {
+  id          String   @id @default(uuid())
+  requisicaoId String
+  requisicao  Requisicao @relation(fields: [requisicaoId], references: [id], onDelete: Cascade)
+  fornecedor  String
+  preco       Float
+  prazo       String
+  condicao    String
+  selecionada Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrdemCompra {
+  id          String   @id @default(uuid())
+  fornecedor  String
+  valor       Float
+  status      String   // 'aguardando', 'transito', 'entregue', 'cancelado'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== COMERCIAL ==========
+
+model Cliente {
+  id             String   @id @default(uuid())
+  nome           String
+  unidade        String
+  obra           String
+  status         String   // 'em_construcao', 'entregue'
+  progresso      Int      @default(0)
+  entregaPrevista String?
+
+  chamados Chamado[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Chamado {
+  id         String   @id @default(uuid())
+  clienteId  String
+  cliente    Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  problema   String
+  prioridade String   // 'alta', 'media', 'baixa'
+  status     String   // 'aberto', 'agendado', 'concluido'
+  garantia   Boolean  @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
