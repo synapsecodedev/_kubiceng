@@ -1,1 +1,9 @@
 node_modules
+dist
+dist-api
+*.db
+*.db-journal
+.env
+.env.local
+.env.production.local
+backend/.env

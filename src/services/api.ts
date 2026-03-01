@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const isProd = import.meta.env.PROD;
+
 export const api = axios.create({
-  baseURL: 'http://localhost:3333',
+  baseURL: isProd ? '/api' : 'http://localhost:3333',
 });
 
 // Interceptor global de erros
