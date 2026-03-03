@@ -36,21 +36,30 @@ async function buildApp() {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await buildApp();
+  try {
+    await buildApp();
 
-  // Strip the /api prefix before forwarding to Fastify
-  const url = req.url?.replace(/^\/api/, '') || '/';
+    // Strip the /api prefix before forwarding to Fastify
+    const url = req.url?.replace(/^\/api/, '') || '/';
 
-  // Use Fastify's inject for serverless compatibility
-  const response = await app.inject({
-    method: req.method as any,
-    url,
-    headers: req.headers as any,
-    payload: req.body ? JSON.stringify(req.body) : undefined,
-  });
+    // Use Fastify's inject for serverless compatibility
+    const response = await app.inject({
+      method: req.method as any,
+      url,
+      headers: req.headers as any,
+      payload: req.body ? JSON.stringify(req.body) : undefined,
+    });
 
-  res.status(response.statusCode);
-  const contentType = response.headers['content-type'];
-  if (contentType) res.setHeader('content-type', contentType);
-  res.send(response.body);
+    res.status(response.statusCode);
+    const contentType = response.headers['content-type'];
+    if (contentType) res.setHeader('content-type', contentType);
+    res.send(response.body);
+  } catch (error: any) {
+    console.error('VERCEL API ERROR:', error);
+    res.status(500).json({ 
+      error: 'Internal Server Error (Vercel)', 
+      message: error.message,
+      stack: error.stack
+    });
+  }
 }
