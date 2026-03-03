@@ -19,12 +19,11 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { login as apiLogin, register as apiRegister } from '@/services/api';
 import { usePlan } from '@/app/components/plan-context';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 // Imagens geradas
-import heroCrane from '../../assets/generated/hero-crane.png';
-import heroHardHat from '../../assets/generated/hero-hardhat.png';
-import featureTablet from '../../assets/generated/feature-tablet.png';
+import holographicCrane from '../../assets/generated/holographic-crane.png';
+import holographicBuilding from '../../assets/generated/holographic-building.png';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -425,81 +424,111 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
         {/* Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-blue-600/10 blur-[100px] rounded-full pointer-events-none" />
 
-        <div className="container mx-auto text-center max-w-4xl relative z-10">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Coluna de Texto */}
+            <div className="text-left max-w-2xl">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 mb-8"
+              >
+                <HardHat className="w-4 h-4 text-blue-400" />
+                <span className="text-blue-300 text-sm font-medium">Gestão de Obras Inteligente</span>
+              </motion.div>
+
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
+              >
+                <span className="text-white">A obra sob</span><br />
+                <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent">
+                  controle total
+                </span>
+              </motion.h1>
+
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-lg text-gray-400 mb-10 leading-relaxed"
+              >
+                Plataforma ERP para construtoras — do orçamento ao diário de obras,
+                medições, suprimentos e gestão de equipe em um só lugar.
+              </motion.p>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="flex flex-col sm:flex-row gap-4 mb-16"
+              >
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base font-semibold" onClick={() => handleRegister('Pro')}>
+                  Teste Grátis por 7 Dias
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button size="lg" variant="outline" className="h-12 px-8 text-base border border-white/10 text-gray-300 bg-transparent hover:bg-white/5 hover:text-white" onClick={() => setIsVideoOpen(true)}>
+                  Ver Demonstração
+                </Button>
+              </motion.div>
+            </div>
+
+            {/* Coluna da Imagem 3D (Holographic Construction) */}
+            <div className="relative hidden lg:block overflow-visible">
+              <motion.div 
+                className="relative w-full h-auto max-w-[500px] mx-auto"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1 }}
+              >
+                {/* Linha de "Scan" decorativa */}
+                <motion.div 
+                  className="absolute top-0 left-0 right-0 h-[1px] bg-blue-400/50 shadow-[0_0_10px_rgba(74,158,255,0.4)] z-20"
+                  animate={{ top: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                />
+                
+                <motion.img 
+                  src={holographicCrane}
+                  alt="Guindaste Holográfico"
+                  className="w-full h-auto mix-blend-screen opacity-70 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  animate={{ 
+                    y: [0, -15, 0],
+                    rotate: [0, 1, 0]
+                  }}
+                  transition={{ 
+                    y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                    rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                />
+              </motion.div>
+              {/* Glow focado de fundo */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500/10 blur-[90px] rounded-full -z-10" />
+            </div>
+          </div>
+
+          {/* Stats em Grid Horizontal (Mantido mas animado) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 mb-8"
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-12"
           >
-            <HardHat className="w-4 h-4 text-blue-400" />
-            <span className="text-blue-300 text-sm font-medium">Gestão de Obras Inteligente</span>
-          </motion.div>
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
-          >
-            <span className="text-white">A obra sob</span><br />
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent">
-              controle total
-            </span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed"
-          >
-            Plataforma ERP para construtoras — do orçamento ao diário de obras,
-            medições, suprimentos e gestão de equipe em um só lugar.
-          </motion.p>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="flex flex-col sm:flex-row justify-center gap-4 mb-16"
-          >
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base font-semibold" onClick={() => handleRegister('Pro')}>
-              Teste Grátis por 7 Dias
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base border border-white/10 text-gray-300 bg-transparent hover:bg-white/5 hover:text-white" onClick={() => setIsVideoOpen(true)}>
-              Ver Demonstração
-            </Button>
-          </motion.div>
-
-          {/* Imagens Decorativas Flutuantes */}
-          <motion.img 
-            src={heroCrane}
-            alt="Guindaste"
-            className="absolute -right-20 top-0 w-64 h-auto opacity-40 mix-blend-screen hidden lg:block"
-            animate={{ y: [0, -20, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.img 
-            src={heroHardHat}
-            alt="Capacete"
-            className="absolute -left-12 bottom-20 w-32 h-auto opacity-30 mix-blend-screen hidden lg:block"
-            animate={{ y: [0, 15, 0], rotate: [0, 5, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
             {stats.map((s) => (
-              <div key={s.label} className="bg-white/5 border border-white/5 rounded-xl p-4">
+              <div key={s.label} className="bg-white/5 border border-white/5 rounded-xl p-4 hover:bg-white/[0.08] transition-colors">
                 <div className="text-2xl font-bold text-blue-400 mb-1">{s.value}</div>
                 <div className="text-xs text-gray-500">{s.label}</div>
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -517,15 +546,20 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             <p className="text-gray-400 max-w-xl mx-auto">Do projeto à entrega das chaves, cada processo digitalizado e integrado</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 relative group/grid">
-            {/* Tablet Flutuante no Background das Features */}
-            <motion.img 
-              src={featureTablet}
-              alt="Dashboard Tablet"
-              className="absolute -right-10 -bottom-20 w-80 h-auto opacity-20 mix-blend-screen pointer-events-none"
-              animate={{ y: [0, -15, 0], x: [0, 5, 0] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 relative group/grid z-10">
+            {/* Blueprint de Fundo (Centralizado) */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] opacity-[0.06] pointer-events-none -z-10 overflow-visible">
+              <motion.img 
+                src={holographicBuilding}
+                alt="Prédio Blueprint"
+                className="w-full h-auto mix-blend-screen"
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+            {/* Removido o background center building para focar no Tablet */}
             {modules.map((mod, idx) => (
               <motion.div 
                 key={mod.title}
@@ -553,6 +587,11 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ===== SIDE DECORATION (REPLACED RECTANGLES) ===== */}
+      <section className="relative h-24 pointer-events-none overflow-visible z-20">
+        <div className="absolute right-0 bottom-0 w-64 h-64 opacity-10 blur-3xl bg-blue-500 rounded-full" />
       </section>
 
       {/* ===== DIFERENCIAS ===== */}
