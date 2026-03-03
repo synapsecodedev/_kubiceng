@@ -243,3 +243,64 @@ model Chamado {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ========== PLANOS & AUTENTICAÇÃO ==========
+
+model Plan {
+  id          String   @id @default(uuid())
+  slug        String   @unique  // 'start', 'pro', 'business', 'custom'
+  name        String             // 'Start', 'Pro', 'Business', 'Personalizado'
+  description String?
+  price       Float              // preço mensal em R$
+  maxUsers    Int      @default(1)
+  maxProjects Int      @default(1)
+  isActive    Boolean  @default(true)
+
+  features      PlanFeature[]
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlanFeature {
+  id      String  @id @default(uuid())
+  planId  String
+  plan    Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  module  String  // 'dashboard','engenharia','suprimentos','execucao','financeiro','pessoas','comercial'
+  enabled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([planId, module])
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  document     String?  // CPF ou CNPJ
+  documentType String?  // 'cpf' | 'cnpj'
+  role         String   @default("user")  // 'user' | 'admin' | 'superadmin'
+
+  subscription Subscription?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String
+  plan      Plan      @relation(fields: [planId], references: [id])
+  status    String    @default("trial")  // 'trial','active','overdue','cancelled'
+  trialEnd  DateTime?
+  startDate DateTime  @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

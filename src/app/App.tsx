@@ -9,14 +9,31 @@ import { ExecucaoModule } from '@/app/components/execucao-module';
 import { FinanceiroModule } from '@/app/components/financeiro-module';
 import { PessoasModule } from '@/app/components/pessoas-module';
 import { ComercialModule } from '@/app/components/comercial-module';
+import { PlanProvider, usePlan } from '@/app/components/plan-context';
+import { SuperAdminModule } from '@/app/components/super-admin-module';
+import { SidebarAdmin } from '@/app/components/sidebar-admin';
+import { FeatureGate } from '@/app/components/feature-gate';
 
 type AppPage = 'landing' | 'termos' | 'privacidade' | 'lgpd' | 'app';
 
-export default function App() {
+function AppContent() {
   const [page, setPage] = useState<AppPage>('landing');
   const [activeModule, setActiveModule] = useState<ModuleType>('dashboard');
+  const [adminTab, setAdminTab] = useState('overview');
+  
+  const { user, logout, isSuperAdmin } = usePlan();
 
   const goBack = () => setPage('landing');
+
+  const handleLogout = () => {
+    logout();
+    setPage('landing');
+  };
+
+  // Se o user estiver logado no context mas a página ainda for landing, muda para app
+  if (user && page === 'landing') {
+    setPage('app');
+  }
 
   // Páginas legais
   if (page === 'termos') return <TermosDeUsoPage onBack={goBack} />;
@@ -34,15 +51,35 @@ export default function App() {
   }
 
   // App principal (logado)
+  
+  // Caso de Super Admin
+  if (isSuperAdmin()) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <SidebarAdmin 
+          activeTab={adminTab} 
+          onTabChange={setAdminTab} 
+          onLogout={handleLogout} 
+        />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-8 max-w-[1600px] mx-auto">
+            <SuperAdminModule />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Caso de Usuário Comum
   const renderModule = () => {
     switch (activeModule) {
       case 'dashboard':   return <DashboardModule />;
-      case 'engenharia':  return <EngenhariaModule />;
-      case 'suprimentos': return <SuprimentosModule />;
-      case 'execucao':    return <ExecucaoModule />;
-      case 'financeiro':  return <FinanceiroModule />;
-      case 'pessoas':     return <PessoasModule />;
-      case 'comercial':   return <ComercialModule />;
+      case 'engenharia':  return <FeatureGate module="engenharia"><EngenhariaModule /></FeatureGate>;
+      case 'suprimentos': return <FeatureGate module="suprimentos"><SuprimentosModule /></FeatureGate>;
+      case 'execucao':    return <FeatureGate module="execucao"><ExecucaoModule /></FeatureGate>;
+      case 'financeiro':  return <FeatureGate module="financeiro"><FinanceiroModule /></FeatureGate>;
+      case 'pessoas':     return <FeatureGate module="pessoas"><PessoasModule /></FeatureGate>;
+      case 'comercial':   return <FeatureGate module="comercial"><ComercialModule /></FeatureGate>;
       default:            return <DashboardModule />;
     }
   };
@@ -52,13 +89,21 @@ export default function App() {
       <SidebarKubic
         activeModule={activeModule}
         onModuleChange={setActiveModule}
-        onLogout={() => setPage('landing')}
+        onLogout={handleLogout}
       />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto transition-all">
         <div className="p-8 max-w-[1600px] mx-auto">
           {renderModule()}
         </div>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <PlanProvider>
+      <AppContent />
+    </PlanProvider>
   );
 }

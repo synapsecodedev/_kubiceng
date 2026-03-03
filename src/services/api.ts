@@ -276,3 +276,61 @@ export const concluirChamado = (id: string) => api.patch<Chamado>(`/chamados/${i
 
 export const getDashboardKpis = () => api.get<DashboardKpis>('/dashboard/kpis').then(r => r.data);
 export const getAlertas = () => api.get<Alerta[]>('/alertas').then(r => r.data);
+
+// ===== AUTH =====
+
+export interface LoginResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: 'user' | 'admin' | 'superadmin';
+  };
+  subscription: {
+    status: string;
+    plan: string;
+    slug: string;
+    features: Record<string, boolean>;
+  } | null;
+}
+
+export const login = (data: { email: string; password: string }) => 
+  api.post<LoginResponse>('/auth/login', data).then(r => r.data);
+
+export const register = (data: { 
+  name: string; 
+  email: string; 
+  password: string; 
+  document?: string; 
+  documentType?: 'cpf' | 'cnpj';
+  planSlug: string;
+}) => api.post<LoginResponse>('/auth/register', data).then(r => r.data);
+
+// ===== ADMIN =====
+
+export interface AdminDashboardData {
+  kpis: {
+    totalContas: number;
+    totalPlanos: number;
+    assinaturasAtivas: number;
+    assinaturasTrial: number;
+    mrr: number;
+  };
+  planos: Array<{ nome: string; slug: string; quantidade: number }>;
+  financeiro: Array<{ nome: string; receita: number; assinantes: number }>;
+}
+
+export const getAdminDashboard = (adminId: string) => 
+  api.get<AdminDashboardData>('/admin/dashboard', { headers: { 'x-admin-id': adminId } }).then(r => r.data);
+
+export const getAdminUsers = (adminId: string) => 
+  api.get('/admin/users', { headers: { 'x-admin-id': adminId } }).then(r => r.data);
+
+export const updateSubscriptionStatus = (adminId: string, userId: string, status: string) => 
+  api.patch(`/admin/users/${userId}/status`, { status }, { headers: { 'x-admin-id': adminId } }).then(r => r.data);
+
+export const getAdminPlans = (adminId: string) => 
+  api.get('/admin/plans', { headers: { 'x-admin-id': adminId } }).then(r => r.data);
+
+export const updatePlan = (adminId: string, planId: string, data: any) => 
+  api.patch(`/admin/plans/${planId}`, data, { headers: { 'x-admin-id': adminId } }).then(r => r.data);

@@ -1,7 +1,8 @@
-import { LayoutDashboard, FileText, ShoppingCart, Hammer, DollarSign, Users, Package, Settings, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Hammer, DollarSign, Users, Package, Settings, ChevronLeft, ChevronRight, LogOut, Lock } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/app/components/ui/utils';
 import { useState } from 'react';
+import { usePlan } from './plan-context';
 import logoKubic from "../../assets/kubiceng-logo.png";
 
 export type ModuleType = 'dashboard' | 'engenharia' | 'suprimentos' | 'execucao' | 'financeiro' | 'pessoas' | 'comercial';
@@ -14,6 +15,7 @@ interface SidebarKubicProps {
 
 export function SidebarKubic({ activeModule, onModuleChange, onLogout }: SidebarKubicProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { canAccessModule } = usePlan();
 
   const menuItems = [
     { id: 'dashboard' as ModuleType, icon: LayoutDashboard, label: 'Dashboard', description: 'Visão Geral' },
@@ -82,15 +84,17 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeModule === item.id;
+          const isLocked = !canAccessModule(item.id);
           
           return (
             <button
               key={item.id}
               onClick={() => onModuleChange(item.id)}
               className={cn(
-                "w-full flex items-center gap-3 p-3 rounded-lg transition-all",
+                "w-full flex items-center gap-3 p-3 rounded-lg transition-all relative group",
                 "hover:bg-white/10",
                 isActive && "bg-[#4A9EFF] shadow-lg",
+                isLocked && "opacity-50 grayscale-[0.5]",
                 collapsed && "justify-center"
               )}
             >
@@ -100,6 +104,9 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
                   <div className="font-medium">{item.label}</div>
                   <div className="text-xs text-white/60">{item.description}</div>
                 </div>
+              )}
+              {isLocked && !collapsed && (
+                <Lock className="w-3.5 h-3.5 text-white/40 group-hover:text-white/70 transition-colors" />
               )}
             </button>
           );

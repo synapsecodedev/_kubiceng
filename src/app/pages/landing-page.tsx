@@ -16,6 +16,9 @@ import { Switch } from '@/app/components/ui/switch';
 import { cn } from '@/app/components/ui/utils';
 import logo from '../../assets/kubiceng-logo.png';
 import { FaWhatsapp } from 'react-icons/fa';
+import { login as apiLogin, register as apiRegister } from '@/services/api';
+import { usePlan } from '@/app/components/plan-context';
+import { toast } from 'sonner';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -178,6 +181,16 @@ const stats = [
 // MAIN COMPONENT
 // ============================================================
 export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
+  const { login: contextLogin } = usePlan();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regDoc, setRegDoc] = useState('');
+  const [regPass, setRegPass] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Variáveis restauradas
   const [customUsers, setCustomUsers] = useState([10]);
   const [customProjects, setCustomProjects] = useState([5]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -207,25 +220,70 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     setIsRegisterOpen(true);
   };
 
-  const handleLogin = () => {
-    setIsLoginOpen(false);
-    onLogin();
+  const handleLoginSubmit = async () => {
+    if (!email || !password) {
+      toast.error('Preencha todos os campos');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await apiLogin({ email, password });
+      contextLogin(response.user, response.subscription!);
+      toast.success(`Bem-vindo, ${response.user.name}!`);
+      setIsLoginOpen(false);
+      onLogin();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao fazer login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async () => {
+    if (!regName || !regEmail || !regPass) {
+      toast.error('Preencha os campos obrigatórios');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const planSlug = selectedPlan.toLowerCase() === 'personalizado' ? 'custom' : selectedPlan.toLowerCase();
+      const response = await apiRegister({
+        name: regName,
+        email: regEmail,
+        password: regPass,
+        document: regDoc,
+        documentType: documentType,
+        planSlug: planSlug || 'pro'
+      });
+      contextLogin(response.user, response.subscription!);
+      toast.success('Conta criada com sucesso!');
+      setIsRegisterOpen(false);
+      onLogin();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao criar conta');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const LoginForm = () => (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
         <Label htmlFor="login-email">Email</Label>
-        <Input id="login-email" type="email" placeholder="seu@email.com" />
+        <Input id="login-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="login-pass">Senha</Label>
-        <Input id="login-pass" type="password" />
+        <Input id="login-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} />
       </div>
-      <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleLogin}>Acessar Painel</Button>
+      <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleLoginSubmit} disabled={isLoading}>
+        {isLoading ? 'Acessando...' : 'Acessar Painel'}
+      </Button>
       <div className="text-center text-sm pt-2">
         <span className="text-gray-500">Ainda não tem conta? </span>
-        <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => handleRegister('Cadastro Geral')}>
+        <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => handleRegister('Pro')}>
           Criar conta agora
         </button>
       </div>
@@ -236,11 +294,11 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     <div className="space-y-4 py-4">
       <div className="space-y-2">
         <Label htmlFor="reg-name">Nome Completo</Label>
-        <Input id="reg-name" placeholder="Seu nome" />
+        <Input id="reg-name" placeholder="Seu nome" value={regName} onChange={e => setRegName(e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="reg-email">Email Corporativo</Label>
-        <Input id="reg-email" type="email" placeholder="nome@empresa.com" />
+        <Input id="reg-email" type="email" placeholder="nome@empresa.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
       </div>
       <div className="space-y-3">
         <Label>Tipo de Documento</Label>
@@ -254,7 +312,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="reg-doc">{documentType === 'cpf' ? 'CPF' : 'CNPJ'} (Somente números)</Label>
-          <Input id="reg-doc" placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'} />
+          <Input id="reg-doc" placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'} value={regDoc} onChange={e => setRegDoc(e.target.value)} />
           {selectedPlan === 'Pro' && (
             <p className="text-xs text-blue-600 font-medium">
               *{documentType === 'cpf' ? 'CPF' : 'CNPJ'} necessário para liberar 7 dias grátis (Válido 1x por documento)
@@ -264,10 +322,10 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="reg-pass">Senha</Label>
-        <Input id="reg-pass" type="password" />
+        <Input id="reg-pass" type="password" value={regPass} onChange={e => setRegPass(e.target.value)} />
       </div>
-      <Button className="w-full bg-[#0A2E50] mt-4" onClick={() => { setIsRegisterOpen(false); onLogin(); }}>
-        {selectedPlan === 'Pro' ? 'Iniciar Teste Grátis' : 'Criar Conta'}
+      <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleRegisterSubmit} disabled={isLoading}>
+        {isLoading ? 'Processando...' : (selectedPlan === 'Pro' ? 'Iniciar Teste Grátis' : 'Criar Conta')}
       </Button>
       <div className="text-center text-sm pt-2">
         <span className="text-gray-500">Já tem conta? </span>

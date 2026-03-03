@@ -7,6 +7,8 @@ import { pessoasRoutes } from './routes/pessoas.routes'
 import { suprimentosRoutes } from './routes/suprimentos.routes'
 import { comercialRoutes } from './routes/comercial.routes'
 import { dashboardRoutes } from './routes/dashboard.routes'
+import { authRoutes } from './routes/auth.routes'
+import { adminRoutes } from './routes/admin.routes'
 
 const app = fastify()
 
@@ -14,6 +16,8 @@ app.register(cors, {
   origin: '*',
 })
 
+app.register(authRoutes)
+app.register(adminRoutes)
 app.register(engenhariaRoutes)
 app.register(execucaoRoutes)
 app.register(financeiroRoutes)

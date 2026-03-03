@@ -1,13 +1,74 @@
 import { prisma } from './lib/prisma'
+import bcrypt from 'bcryptjs'
 
 async function main() {
+  // ===== SEED DE PLANOS (sempre roda) =====
+  const planCount = await prisma.plan.count()
+  if (planCount === 0) {
+    console.log('Seeding plans...')
+
+    const allModules = ['dashboard', 'engenharia', 'suprimentos', 'execucao', 'financeiro', 'pessoas', 'comercial']
+
+    const plansData = [
+      { slug: 'start', name: 'Start', description: 'Para pequenas obras', price: 199, maxUsers: 1, maxProjects: 1, enabledModules: ['dashboard', 'engenharia', 'financeiro'] },
+      { slug: 'pro', name: 'Pro', description: 'Para construtoras em crescimento', price: 499, maxUsers: 5, maxProjects: 3, enabledModules: ['dashboard', 'engenharia', 'suprimentos', 'execucao', 'financeiro'] },
+      { slug: 'business', name: 'Business', description: 'Gestão completa', price: 999, maxUsers: 15, maxProjects: 10, enabledModules: allModules },
+      { slug: 'custom', name: 'Personalizado', description: 'Monte seu plano ideal', price: 0, maxUsers: 100, maxProjects: 50, enabledModules: allModules },
+    ]
+
+    for (const pd of plansData) {
+      const { enabledModules, ...planFields } = pd
+      const plan = await prisma.plan.create({ data: planFields })
+
+      await prisma.planFeature.createMany({
+        data: allModules.map(mod => ({
+          planId: plan.id,
+          module: mod,
+          enabled: enabledModules.includes(mod),
+        })),
+      })
+    }
+
+    console.log('✅ Plans seeded!')
+  }
+
+  // ===== SEED SUPERADMIN =====
+  const adminExists = await prisma.user.findUnique({ where: { email: 'admin@kubiceng.com' } })
+  if (!adminExists) {
+    console.log('Creating superadmin user...')
+    const hash = await bcrypt.hash('admin123', 10)
+    const businessPlan = await prisma.plan.findUnique({ where: { slug: 'business' } })
+
+    const admin = await prisma.user.create({
+      data: {
+        name: 'Super Admin',
+        email: 'admin@kubiceng.com',
+        passwordHash: hash,
+        role: 'superadmin',
+      },
+    })
+
+    if (businessPlan) {
+      await prisma.subscription.create({
+        data: {
+          userId: admin.id,
+          planId: businessPlan.id,
+          status: 'active',
+        },
+      })
+    }
+
+    console.log('✅ Superadmin created: admin@kubiceng.com / admin123')
+  }
+
+  // ===== DADOS DE DEMONSTRAÇÃO =====
   const count = await prisma.project.count()
   if (count > 0) {
-    console.log('Database already seeded — skipping.')
+    console.log('Demo data already seeded — skipping.')
     return
   }
 
-  console.log('Seeding database...')
+  console.log('Seeding demo data...')
 
   // ===== ENGENHARIA =====
   const proj1 = await prisma.project.create({
