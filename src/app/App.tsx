@@ -13,6 +13,7 @@ import { PlanProvider, usePlan } from '@/app/components/plan-context';
 import { SuperAdminModule } from '@/app/components/super-admin-module';
 import { SidebarAdmin } from '@/app/components/sidebar-admin';
 import { FeatureGate } from '@/app/components/feature-gate';
+import { Toaster } from 'sonner';
 
 type AppPage = 'landing' | 'termos' | 'privacidade' | 'lgpd' | 'app';
 
@@ -103,6 +104,7 @@ function AppContent() {
 export default function App() {
   return (
     <PlanProvider>
+      <Toaster position="top-right" richColors />
       <AppContent />
     </PlanProvider>
   );

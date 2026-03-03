@@ -268,73 +268,6 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     }
   };
 
-  const LoginForm = () => (
-    <div className="space-y-4 py-4">
-      <div className="space-y-2">
-        <Label htmlFor="login-email">Email</Label>
-        <Input id="login-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="login-pass">Senha</Label>
-        <Input id="login-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      </div>
-      <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleLoginSubmit} disabled={isLoading}>
-        {isLoading ? 'Acessando...' : 'Acessar Painel'}
-      </Button>
-      <div className="text-center text-sm pt-2">
-        <span className="text-gray-500">Ainda não tem conta? </span>
-        <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => handleRegister('Pro')}>
-          Criar conta agora
-        </button>
-      </div>
-    </div>
-  );
-
-  const RegistrationForm = () => (
-    <div className="space-y-4 py-4">
-      <div className="space-y-2">
-        <Label htmlFor="reg-name">Nome Completo</Label>
-        <Input id="reg-name" placeholder="Seu nome" value={regName} onChange={e => setRegName(e.target.value)} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="reg-email">Email Corporativo</Label>
-        <Input id="reg-email" type="email" placeholder="nome@empresa.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
-      </div>
-      <div className="space-y-3">
-        <Label>Tipo de Documento</Label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input type="radio" name="docType" checked={documentType === 'cpf'} onChange={() => setDocumentType('cpf')} className="accent-[#0A2E50]" /> CPF
-          </label>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input type="radio" name="docType" checked={documentType === 'cnpj'} onChange={() => setDocumentType('cnpj')} className="accent-[#0A2E50]" /> CNPJ
-          </label>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="reg-doc">{documentType === 'cpf' ? 'CPF' : 'CNPJ'} (Somente números)</Label>
-          <Input id="reg-doc" placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'} value={regDoc} onChange={e => setRegDoc(e.target.value)} />
-          {selectedPlan === 'Pro' && (
-            <p className="text-xs text-blue-600 font-medium">
-              *{documentType === 'cpf' ? 'CPF' : 'CNPJ'} necessário para liberar 7 dias grátis (Válido 1x por documento)
-            </p>
-          )}
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="reg-pass">Senha</Label>
-        <Input id="reg-pass" type="password" value={regPass} onChange={e => setRegPass(e.target.value)} />
-      </div>
-      <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleRegisterSubmit} disabled={isLoading}>
-        {isLoading ? 'Processando...' : (selectedPlan === 'Pro' ? 'Iniciar Teste Grátis' : 'Criar Conta')}
-      </Button>
-      <div className="text-center text-sm pt-2">
-        <span className="text-gray-500">Já tem conta? </span>
-        <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => { setIsRegisterOpen(false); setIsLoginOpen(true); }}>
-          Fazer Login
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-[#04111e] text-white">
@@ -346,7 +279,25 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             <DialogTitle>Acessar sua Conta</DialogTitle>
             <DialogDescription>Entre com suas credenciais para continuar.</DialogDescription>
           </DialogHeader>
-          <LoginForm />
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="login-email">Email</Label>
+              <Input id="login-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="login-pass">Senha</Label>
+              <Input id="login-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleLoginSubmit} disabled={isLoading}>
+              {isLoading ? 'Acessando...' : 'Acessar Painel'}
+            </Button>
+            <div className="text-center text-sm pt-2">
+              <span className="text-gray-500">Ainda não tem conta? </span>
+              <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => handleRegister('Pro')}>
+                Criar conta agora
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -370,7 +321,49 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             <DialogTitle>Criar Conta — Plano {selectedPlan}</DialogTitle>
             <DialogDescription>Preencha seus dados para acessar a plataforma.</DialogDescription>
           </DialogHeader>
-          <RegistrationForm />
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reg-name">Nome Completo</Label>
+              <Input id="reg-name" placeholder="Seu nome" value={regName} onChange={e => setRegName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-email">Email Corporativo</Label>
+              <Input id="reg-email" type="email" placeholder="nome@empresa.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
+            </div>
+            <div className="space-y-3">
+              <Label>Tipo de Documento</Label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="radio" name="docType" checked={documentType === 'cpf'} onChange={() => setDocumentType('cpf')} className="accent-[#0A2E50]" /> CPF
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="radio" name="docType" checked={documentType === 'cnpj'} onChange={() => setDocumentType('cnpj')} className="accent-[#0A2E50]" /> CNPJ
+                </label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reg-doc">{documentType === 'cpf' ? 'CPF' : 'CNPJ'} (Somente números)</Label>
+                <Input id="reg-doc" placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'} value={regDoc} onChange={e => setRegDoc(e.target.value)} />
+                {selectedPlan === 'Pro' && (
+                  <p className="text-xs text-blue-600 font-medium">
+                    *{documentType === 'cpf' ? 'CPF' : 'CNPJ'} necessário para liberar 7 dias grátis (Válido 1x por documento)
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-pass">Senha</Label>
+              <Input id="reg-pass" type="password" value={regPass} onChange={e => setRegPass(e.target.value)} />
+            </div>
+            <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleRegisterSubmit} disabled={isLoading}>
+              {isLoading ? 'Processando...' : (selectedPlan === 'Pro' ? 'Iniciar Teste Grátis' : 'Criar Conta')}
+            </Button>
+            <div className="text-center text-sm pt-2">
+              <span className="text-gray-500">Já tem conta? </span>
+              <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => { setIsRegisterOpen(false); setIsLoginOpen(true); }}>
+                Fazer Login
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

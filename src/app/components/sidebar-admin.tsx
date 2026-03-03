@@ -31,20 +31,20 @@ export function SidebarAdmin({ activeTab, onTabChange, onLogout }: SidebarAdminP
 
   return (
     <div className={cn(
-      "h-screen bg-[#0a0a0a] text-white flex flex-col transition-all duration-300 border-r border-white/5",
+      "h-screen bg-[#0A2E50] text-white flex flex-col transition-all duration-300 border-r border-white/5",
       collapsed ? "w-20" : "w-72"
     )}>
         {/* Header */}
       <div className="p-5 border-b border-white/5">
         <div className="flex items-center justify-between">
           <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
-            <div className="w-10 h-10 bg-[#FF9500] rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/10">
+            <div className="w-10 h-10 bg-[#4A9EFF] rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/10">
                <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             {!collapsed && (
               <div className="flex flex-col leading-none">
                 <span className="text-white font-bold text-base tracking-tight">
-                  Kubic<span className="text-[#FF9500]">Admin</span>
+                  Kubic<span className="text-[#4A9EFF]">Admin</span>
                 </span>
                 <span className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mt-0.5">Super Controle</span>
               </div>
@@ -66,12 +66,12 @@ export function SidebarAdmin({ activeTab, onTabChange, onLogout }: SidebarAdminP
               className={cn(
                 "w-full flex items-center gap-3 p-3 rounded-xl transition-all relative group",
                 isActive 
-                  ? "bg-[#FF9500]/10 text-[#FF9500]" 
+                  ? "bg-[#4A9EFF]/10 text-[#4A9EFF]" 
                   : "text-white/50 hover:text-white hover:bg-white/5",
                 collapsed && "justify-center"
               )}
             >
-              <Icon className={cn("w-5 h-5 flex-shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(255,149,0,0.5)]")} />
+              <Icon className={cn("w-5 h-5 flex-shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(74,158,255,0.5)]")} />
               {!collapsed && (
                 <div className="flex-1 text-left">
                   <div className="font-semibold text-sm">{item.label}</div>
@@ -79,7 +79,7 @@ export function SidebarAdmin({ activeTab, onTabChange, onLogout }: SidebarAdminP
                 </div>
               )}
               {isActive && !collapsed && (
-                <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-[#FF9500] shadow-[0_0_10px_#FF9500]" />
+                <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-[#4A9EFF] shadow-[0_0_10px_#4A9EFF]" />
               )}
             </button>
           );

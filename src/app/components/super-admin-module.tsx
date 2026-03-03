@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Input } from '@/app/components/ui/input';
+import { usePlan } from '@/app/components/plan-context';
+import { getAdminDashboard, getAdminUsers } from '@/services/api';
 import { 
   BarChart, 
   Bar, 
@@ -59,53 +61,49 @@ interface UserAccount {
   dataCriacao: string;
 }
 
-const COLORS = ['#FF9500', '#4A9EFF', '#22C55E', '#EF4444'];
-
+const COLORS = ['#4A9EFF', '#0A2E50', '#22C55E', '#EF4444'];
 export function SuperAdminModule() {
   const [activeTab, setActiveTab] = useState<'overview' | 'accounts' | 'plans' | 'financial'>('overview');
   const [kpis, setKpis] = useState<AdminKPIs | null>(null);
-  const [plansDist] = useState<PlanDist[]>([
-      { nome: 'Starter', slug: 'start', quantidade: 45 },
-      { nome: 'Professional', slug: 'pro', quantidade: 58 },
-      { nome: 'Premium', slug: 'business', quantidade: 12 },
-      { nome: 'Enterprise', slug: 'custom', quantidade: 9 },
-    ]);
-  const [financials] = useState<FinancialData[]>([
-      { nome: 'Starter', receita: 8955, assinantes: 45 },
-      { nome: 'Professional', receita: 28942, assinantes: 58 },
-      { nome: 'Premium', receita: 11988, assinantes: 12 },
-      { nome: 'Enterprise', receita: 0, assinantes: 9 },
-    ]);
+  const { user: adminUser } = usePlan();
+  const [plansDist, setPlansDist] = useState<PlanDist[]>([]);
+  const [financials, setFinancials] = useState<FinancialData[]>([]);
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Simular Fetch (Integrar com API real depois)
+  // Buscar dados reais da API
   useEffect(() => {
-    // Aqui viria a chamada: fetch('/admin/dashboard', { headers: { 'x-admin-id': user.id } })
-    setKpis({
-      totalContas: 124,
-      totalPlanos: 4,
-      assinaturasAtivas: 86,
-      assinaturasTrial: 32,
-      mrr: 42560
-    });
+    async function fetchData() {
+      if (!adminUser?.id) return;
+      
+      try {
+        setIsLoading(true);
+        const [dashboardData, usersData] = await Promise.all([
+          getAdminDashboard(adminUser.id),
+          getAdminUsers(adminUser.id)
+        ]);
 
-    // Mock data already initialized in useState
-    
-    setKpis({
-      totalContas: 124,
-      totalPlanos: 4,
-      assinaturasAtivas: 86,
-      assinaturasTrial: 32,
-      mrr: 42560
-    });
+        setKpis(dashboardData.kpis);
+        setPlansDist(dashboardData.planos);
+        setFinancials(dashboardData.financeiro);
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Erro ao carregar dados do admin:", error);
+        setKpis({
+          totalContas: 0,
+          totalPlanos: 0,
+          assinaturasAtivas: 0,
+          assinaturasTrial: 0,
+          mrr: 0
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-    setUsers([
-      { id: '1', nome: 'Rodrigo Pires', email: 'rodrigo@kubic.eng', documento: '123.456.789-00', plano: 'Professional', status: 'active', dataCriacao: '2026-02-28' },
-      { id: '2', nome: 'Nero Barber', email: 'contato@nerobarber.com', documento: '45.123.888/0001-90', plano: 'Premium', status: 'trial', dataCriacao: '2026-03-01' },
-      { id: '3', nome: 'Ana Construções', email: 'ana@constru.com', documento: '11.222.333/0001-44', plano: 'Starter', status: 'overdue', dataCriacao: '2026-01-15' },
-    ]);
-  }, []);
+    fetchData();
+  }, [adminUser]);
 
   const filteredUsers = users.filter(u => 
     u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -118,7 +116,7 @@ export function SuperAdminModule() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck className="w-5 h-5 text-[#FF9500]" />
+            <ShieldCheck className="w-5 h-5 text-[#4A9EFF]" />
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Super Admin</h1>
           </div>
           <p className="text-gray-500 text-sm">Visão completa da plataforma KubicEng</p>
@@ -150,8 +148,8 @@ export function SuperAdminModule() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <KPIItem title="Construtoras" value={kpis?.totalContas || 0} icon={Users} trend="+8 este mês" />
             <KPIItem title="Assinaturas Ativas" value={kpis?.assinaturasAtivas || 0} icon={CreditCard} subtitle="Em todos os planos" color="#22C55E" />
-            <KPIItem title="MRR (Mensal)" value={`R$ ${kpis?.mrr.toLocaleString()}`} icon={TrendingUp} subtitle="Receita Recorrente" color="#FF9500" />
-            <KPIItem title="Novos Trials" value={kpis?.assinaturasTrial || 0} icon={AlertCircle} subtitle="Contas em teste" color="#4A9EFF" />
+            <KPIItem title="MRR (Mensal)" value={`R$ ${kpis?.mrr.toLocaleString()}`} icon={TrendingUp} subtitle="Receita Recorrente" color="#4A9EFF" />
+            <KPIItem title="Novos Trials" value={kpis?.assinaturasTrial || 0} icon={AlertCircle} subtitle="Contas em teste" color="#0A2E50" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -213,8 +211,8 @@ export function SuperAdminModule() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 w-full mt-4">
                   <StatusBadge label="Ativas" count={kpis?.assinaturasAtivas || 0} color="#22C55E" />
-                  <StatusBadge label="Trial" count={kpis?.assinaturasTrial || 0} color="#4A9EFF" />
-                  <StatusBadge label="Inadimplentes" count={4} color="#FF9500" />
+                  <StatusBadge label="Trial" count={kpis?.assinaturasTrial || 0} color="#0A2E50" />
+                  <StatusBadge label="Inadimplentes" count={4} color="#4A9EFF" />
                   <StatusBadge label="Canceladas" count={2} color="#EF4444" />
                 </div>
               </CardContent>
