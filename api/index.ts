@@ -12,6 +12,8 @@ import { pessoasRoutes } from '../backend/src/routes/pessoas.routes';
 import { suprimentosRoutes } from '../backend/src/routes/suprimentos.routes';
 import { comercialRoutes } from '../backend/src/routes/comercial.routes';
 import { dashboardRoutes } from '../backend/src/routes/dashboard.routes';
+import { authRoutes } from '../backend/src/routes/auth.routes';
+import { adminRoutes } from '../backend/src/routes/admin.routes';
 
 const app = Fastify({ logger: false });
 
@@ -27,6 +29,8 @@ async function buildApp() {
   await app.register(suprimentosRoutes);
   await app.register(comercialRoutes);
   await app.register(dashboardRoutes);
+  await app.register(authRoutes);
+  await app.register(adminRoutes);
   await app.ready();
   isReady = true;
 }

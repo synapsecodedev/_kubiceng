@@ -62,8 +62,20 @@ interface UserAccount {
 }
 
 const COLORS = ['#4A9EFF', '#0A2E50', '#22C55E', '#EF4444'];
-export function SuperAdminModule() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'accounts' | 'plans' | 'financial'>('overview');
+export function SuperAdminModule({ 
+  activeTab: externalTab, 
+  onTabChange 
+}: { 
+  activeTab?: 'overview' | 'accounts' | 'plans' | 'financial',
+  onTabChange?: (tab: string) => void
+} = {}) {
+  const [internalTab, setInternalTab] = useState<'overview' | 'accounts' | 'plans' | 'financial'>('overview');
+  
+  const activeTab = externalTab || internalTab;
+  const setActiveTab = (tab: any) => {
+    if (onTabChange) onTabChange(tab);
+    setInternalTab(tab);
+  };
   const [kpis, setKpis] = useState<AdminKPIs | null>(null);
   const { user: adminUser } = usePlan();
   const [plansDist, setPlansDist] = useState<PlanDist[]>([]);
