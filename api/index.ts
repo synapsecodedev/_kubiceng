@@ -51,8 +51,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: req.headers as any,
       payload: req.body ? JSON.stringify(req.body) : undefined,
     });
-
-    res.status(response.statusCode);
+    res.status(response.statusCode).send(response.body);
+  } catch (error) {
+    console.error('Critical Error in Vercel Function:', error);
+    res.status(500).send({
+      message: 'Critical Backend Error',
+      error: String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+}    res.status(response.statusCode);
     const contentType = response.headers["content-type"];
     if (contentType) res.setHeader("content-type", contentType);
     res.send(response.body);
