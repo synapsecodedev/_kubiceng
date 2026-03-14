@@ -53,7 +53,7 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
         className="relative w-full h-full"
         style={{ transformStyle: 'preserve-3d' }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        transition={{ type: "spring", stiffness: 80, damping: 20 }}
       >
         {/* --- FRONT: LOGIN --- */}
         <div 
