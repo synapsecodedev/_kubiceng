@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Mail, User, ShieldCheck, ArrowRight, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Lock, Mail, User, ShieldCheck } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { cn } from '@/app/components/ui/utils';
+import logo from '../../assets/kubiceng-logo.png';
 
 interface AuthCardProps {
   onLogin: (data: any) => Promise<void>;
@@ -47,22 +48,27 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
   };
 
   return (
-    <div className="w-full max-w-[850px] h-[550px] perspective-1000">
+    <div className="w-full max-w-[850px] h-[580px]" style={{ perspective: '2000px' }}>
       <motion.div
-        className="relative w-full h-full duration-700 preserve-3d"
+        className="relative w-full h-full"
+        style={{ transformStyle: 'preserve-3d' }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
       >
         {/* --- FRONT: LOGIN --- */}
-        <div className="absolute inset-0 w-full h-full backface-hidden flex bg-white rounded-[2rem] overflow-hidden shadow-2xl border border-white/10">
+        <div 
+          className="absolute inset-0 w-full h-full flex bg-white rounded-[2rem] overflow-hidden shadow-2xl border border-white/10"
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }}
+        >
           {/* Form Section */}
           <div className="flex-[1.2] p-12 flex flex-col justify-center">
-            <div className="mb-8">
+            <div className="mb-8 flex flex-col items-center sm:items-start">
+              <img src={logo} alt="KubicEng" className="h-10 mb-6" />
               <h2 className="text-3xl font-bold text-[#0A2E50] mb-2">Bem-vindo de volta!</h2>
-              <p className="text-gray-500">Acesse sua conta para gerenciar suas obras.</p>
+              <p className="text-gray-500 text-sm">Acesse sua conta para gerenciar suas obras.</p>
             </div>
             
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
               <div className="space-y-2">
                 <Label htmlFor="login-email">Email</Label>
                 <div className="relative">
@@ -108,16 +114,19 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
           </div>
 
           {/* Info Section */}
-          <div className="flex-[0.8] bg-gradient-to-br from-[#f27121] via-[#e94057] to-[#8a2387] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
+          <div className="flex-[0.8] bg-[#0A2E50] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
+            {/* Glossy background detail */}
+            <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-blue-400/10 rounded-full blur-3xl animate-pulse" />
+            
             <div className="relative z-10">
               <h2 className="text-3xl font-bold mb-4">Novo aqui?</h2>
-              <p className="text-white/80 mb-8 leading-relaxed">
+              <p className="text-white/80 mb-8 leading-relaxed text-sm">
                 Crie sua conta agora e comece a digitalizar seus canteiros de obra.
               </p>
               <Button 
                 variant="outline" 
-                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#e94057] rounded-full px-10 h-12 font-bold transition-all duration-300"
+                className="border-2 border-white/20 text-white bg-white/5 hover:bg-white hover:text-[#0A2E50] rounded-full px-10 h-12 font-bold transition-all duration-300"
                 onClick={handleToggle}
               >
                 CRIAR CONTA
@@ -127,18 +136,21 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
         </div>
 
         {/* --- BACK: REGISTER --- */}
-        <div className="absolute inset-0 w-full h-full backface-hidden flex bg-white rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 rotate-y-180">
+        <div 
+          className="absolute inset-0 w-full h-full flex bg-white rounded-[2rem] overflow-hidden shadow-2xl border border-white/10"
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+        >
           {/* Info Section (Left on back) */}
-          <div className="flex-[0.8] bg-gradient-to-br from-[#8a2387] via-[#e94057] to-[#f27121] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
-            <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
+          <div className="flex-[0.8] bg-[#0A2E50] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
             <div className="relative z-10">
               <h2 className="text-3xl font-bold mb-4">Seja bem-vindo!</h2>
-              <p className="text-white/80 mb-8 leading-relaxed">
+              <p className="text-white/80 mb-8 leading-relaxed text-sm">
                 Para manter-se conectado, faça login com suas informações pessoais.
               </p>
               <Button 
                 variant="outline" 
-                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#e94057] rounded-full px-10 h-12 font-bold transition-all duration-300"
+                className="border-2 border-white/20 text-white bg-white/5 hover:bg-white hover:text-[#0A2E50] rounded-full px-10 h-12 font-bold transition-all duration-300"
                 onClick={handleToggle}
               >
                 Acessar Painel
@@ -148,12 +160,13 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
 
           {/* Form Section */}
           <div className="flex-[1.2] p-10 flex flex-col justify-center overflow-y-auto">
-            <div className="mb-6">
+            <div className="mb-6 flex flex-col items-center sm:items-start text-left w-full">
+              <img src={logo} alt="KubicEng" className="h-8 mb-4" />
               <h2 className="text-2xl font-bold text-[#0A2E50] mb-1">Criar Nova Conta</h2>
               <p className="text-xs text-gray-500">Comece seu teste grátis no plano <strong>{defaultPlan}</strong>.</p>
             </div>
             
-            <form onSubmit={handleRegisterSubmit} className="space-y-3">
+            <form onSubmit={handleRegisterSubmit} className="space-y-3 text-left">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="reg-name" className="text-xs">Nome Completo</Label>
@@ -229,7 +242,7 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
                 </p>
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-gradient-to-r from-[#e94057] to-[#f27121] text-white font-bold rounded-xl shadow-lg shadow-orange-500/20"
+                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20"
                   disabled={isLoading}
                 >
                   {isLoading ? "Criando..." : "CADASTRAR E COMEÇAR"}
