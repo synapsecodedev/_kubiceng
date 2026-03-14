@@ -6,7 +6,7 @@ import {
   Check, ArrowRight, Building2, BarChart3, Users, Calculator,
   X, Menu, HardHat, Ruler, Layers, ClipboardList,
   Package, TrendingUp, Shield, Zap, Instagram, Linkedin, Youtube,
-  Mail, Phone, HeadphonesIcon
+  Mail, Phone, HeadphonesIcon, PlayCircle
 } from 'lucide-react';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
