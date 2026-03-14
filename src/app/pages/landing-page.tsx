@@ -11,7 +11,8 @@ import {
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Slider } from '@/app/components/ui/slider';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
+import { AuthCard } from '@/app/components/auth-card';
 import { Switch } from '@/app/components/ui/switch';
 import { cn } from '@/app/components/ui/utils';
 import logo from '../../assets/kubiceng-logo.png';
@@ -187,24 +188,16 @@ const stats = [
 // ============================================================
 export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
   const { login: contextLogin } = usePlan();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regDoc, setRegDoc] = useState('');
-  const [regPass, setRegPass] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   // Variáveis restauradas
   const [customUsers, setCustomUsers] = useState([10]);
   const [customProjects, setCustomProjects] = useState([5]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('');
-  const [documentType, setDocumentType] = useState<'cpf' | 'cnpj'>('cpf');
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('Pro');
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const calculateCustomPrice = () => {
     const basePrice = 299;
@@ -219,24 +212,18 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     return monthlyPrice.toFixed(0);
   };
 
-  const handleRegister = (planName: string) => {
+  const handleAuthOpen = (planName: string = 'Pro', mode: 'login' | 'register' = 'register') => {
     setSelectedPlan(planName);
-    setIsLoginOpen(false);
-    setIsRegisterOpen(true);
+    setIsAuthOpen(true);
   };
 
-  const handleLoginSubmit = async () => {
-    if (!email || !password) {
-      toast.error('Preencha todos os campos');
-      return;
-    }
-
+  const handleLoginSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      const response = await apiLogin({ email, password });
+      const response = await apiLogin(data);
       contextLogin(response.user, response.subscription!);
       toast.success(`Bem-vindo, ${response.user.name}!`);
-      setIsLoginOpen(false);
+      setIsAuthOpen(false);
       onLogin();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao fazer login');
@@ -245,26 +232,13 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     }
   };
 
-  const handleRegisterSubmit = async () => {
-    if (!regName || !regEmail || !regPass) {
-      toast.error('Preencha os campos obrigatórios');
-      return;
-    }
-
+  const handleRegisterSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      const planSlug = selectedPlan.toLowerCase() === 'personalizado' ? 'custom' : selectedPlan.toLowerCase();
-      const response = await apiRegister({
-        name: regName,
-        email: regEmail,
-        password: regPass,
-        document: regDoc,
-        documentType: documentType,
-        planSlug: planSlug || 'pro'
-      });
+      const response = await apiRegister(data);
       contextLogin(response.user, response.subscription!);
       toast.success('Conta criada com sucesso!');
-      setIsRegisterOpen(false);
+      setIsAuthOpen(false);
       onLogin();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao criar conta');
@@ -278,96 +252,36 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     <div className="min-h-screen bg-[#04111e] text-white">
 
       {/* ===== MODAIS ===== */}
-      <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Acessar sua Conta</DialogTitle>
-            <DialogDescription>Entre com suas credenciais para continuar.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="login-email">Email</Label>
-              <Input id="login-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="login-pass">Senha</Label>
-              <Input id="login-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-            <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleLoginSubmit} disabled={isLoading}>
-              {isLoading ? 'Acessando...' : 'Acessar Painel'}
-            </Button>
-            <div className="text-center text-sm pt-2">
-              <span className="text-gray-500">Ainda não tem conta? </span>
-              <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => handleRegister('Pro')}>
-                Criar conta agora
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
-        <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden bg-black border-none">
+      {/* ===== MODAL DE AUTENTICAÇÃO UNIFICADO ===== */}
+      <Dialog open={isAuthOpen} onOpenChange={setIsAuthOpen}>
+        <DialogContent className="sm:max-w-[850px] p-0 overflow-visible bg-transparent border-none shadow-none">
           <DialogHeader className="sr-only">
-            <DialogTitle>Vídeo de Apresentação</DialogTitle>
-            <DialogDescription>Conheça o KubicEng em detalhes.</DialogDescription>
+            <DialogTitle>Autenticação</DialogTitle>
           </DialogHeader>
-          <div className="aspect-video w-full">
-            <iframe className="w-full h-full" src="https://www.youtube.com/embed/RbliK3D1H_k?autoplay=1&rel=0"
-              title="Apresentação KubicEng" frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-          </div>
+          <AuthCard 
+            onLogin={handleLoginSubmit} 
+            onRegister={handleRegisterSubmit} 
+            isLoading={isLoading} 
+            defaultPlan={selectedPlan}
+          />
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Criar Conta — Plano {selectedPlan}</DialogTitle>
-            <DialogDescription>Preencha seus dados para acessar a plataforma.</DialogDescription>
+      {/* ===== MODAL DE VÍDEO ===== */}
+      <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+        <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden bg-transparent border-none shadow-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Demonstração KubicEng</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="reg-name">Nome Completo</Label>
-              <Input id="reg-name" placeholder="Seu nome" value={regName} onChange={e => setRegName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reg-email">Email Corporativo</Label>
-              <Input id="reg-email" type="email" placeholder="nome@empresa.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
-            </div>
-            <div className="space-y-3">
-              <Label>Tipo de Documento</Label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="radio" name="docType" checked={documentType === 'cpf'} onChange={() => setDocumentType('cpf')} className="accent-[#0A2E50]" /> CPF
-                </label>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="radio" name="docType" checked={documentType === 'cnpj'} onChange={() => setDocumentType('cnpj')} className="accent-[#0A2E50]" /> CNPJ
-                </label>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reg-doc">{documentType === 'cpf' ? 'CPF' : 'CNPJ'} (Somente números)</Label>
-                <Input id="reg-doc" placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'} value={regDoc} onChange={e => setRegDoc(e.target.value)} />
-                {selectedPlan === 'Pro' && (
-                  <p className="text-xs text-blue-600 font-medium">
-                    *{documentType === 'cpf' ? 'CPF' : 'CNPJ'} necessário para liberar 7 dias grátis (Válido 1x por documento)
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reg-pass">Senha</Label>
-              <Input id="reg-pass" type="password" value={regPass} onChange={e => setRegPass(e.target.value)} />
-            </div>
-            <Button className="w-full bg-[#0A2E50] mt-4" onClick={handleRegisterSubmit} disabled={isLoading}>
-              {isLoading ? 'Processando...' : (selectedPlan === 'Pro' ? 'Iniciar Teste Grátis' : 'Criar Conta')}
-            </Button>
-            <div className="text-center text-sm pt-2">
-              <span className="text-gray-500">Já tem conta? </span>
-              <button className="text-[#0A2E50] font-semibold hover:underline" onClick={() => { setIsRegisterOpen(false); setIsLoginOpen(true); }}>
-                Fazer Login
-              </button>
-            </div>
+          <div className="relative pt-[56.25%]"> {/* 16:9 Aspect Ratio */}
+            <iframe
+              className="absolute top-0 left-0 w-full h-full rounded-lg"
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" // Replace with actual video URL
+              title="KubicEng Demo Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
         </DialogContent>
       </Dialog>
@@ -393,8 +307,8 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
           </nav>
 
           <div className="hidden md:flex gap-3">
-            <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/5 text-sm" onClick={() => setIsLoginOpen(true)}>Entrar</Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-9 px-4" onClick={() => handleRegister('Pro')}>
+            <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/5 text-sm" onClick={() => handleAuthOpen('Pro', 'login')}>Entrar</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-9 px-4" onClick={() => handleAuthOpen('Pro', 'register')}>
               Começar Grátis
             </Button>
           </div>
@@ -410,8 +324,8 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             <a href="#planos" className="text-gray-400 hover:text-white py-2" onClick={() => setIsMobileMenuOpen(false)}>Planos</a>
             <a href="#contato" className="text-gray-400 hover:text-white py-2" onClick={() => setIsMobileMenuOpen(false)}>Contato</a>
             <div className="flex flex-col gap-3 pt-4 border-t border-white/5">
-              <Button variant="ghost" className="text-gray-400 hover:text-white justify-start" onClick={() => { setIsLoginOpen(true); setIsMobileMenuOpen(false); }}>Entrar</Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { handleRegister('Pro'); setIsMobileMenuOpen(false); }}>Começar Grátis</Button>
+            <Button variant="ghost" className="text-gray-400 hover:text-white justify-start" onClick={() => { handleAuthOpen('Pro', 'login'); setIsMobileMenuOpen(false); }}>Entrar</Button>
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { handleAuthOpen('Pro', 'register'); setIsMobileMenuOpen(false); }}>Começar Grátis</Button>
             </div>
           </div>
         )}
@@ -470,12 +384,13 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 transition={{ duration: 0.6, delay: 0.6 }}
                 className="flex flex-col sm:flex-row gap-4 mb-16"
               >
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base font-semibold" onClick={() => handleRegister('Pro')}>
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base font-semibold" onClick={() => handleAuthOpen('Pro', 'register')}>
                   Teste Grátis por 7 Dias
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 px-8 text-base border border-white/10 text-gray-300 bg-transparent hover:bg-white/5 hover:text-white" onClick={() => setIsVideoOpen(true)}>
                   Ver Demonstração
+                  <PlayCircle className="ml-2 h-5 w-5" />
                 </Button>
               </motion.div>
             </div>
@@ -652,8 +567,8 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleRegister('Start')}>Escolher Start</Button>
+                <CardFooter>
+                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Start', 'register')}>Escolher Start</Button>
               </CardFooter>
             </Card>
 
@@ -679,7 +594,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 </ul>
               </CardContent>
               <CardFooter className="pb-6">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11" onClick={() => handleRegister('Pro')}>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11" onClick={() => handleAuthOpen('Pro', 'register')}>
                   Testar Grátis
                 </Button>
               </CardFooter>
@@ -704,7 +619,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleRegister('Business')}>Escolher Business</Button>
+                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Business', 'register')}>Escolher Business</Button>
               </CardFooter>
             </Card>
 
@@ -734,7 +649,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 <div className="text-xs text-gray-600">*Inclui todos os módulos e suporte 24/7.</div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleRegister('Personalizado')}>Contatar Vendas</Button>
+                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Personalizado', 'register')}>Contatar Vendas</Button>
               </CardFooter>
             </Card>
           </div>
@@ -783,7 +698,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                   <Label className="text-gray-400" htmlFor="tel">Telefone</Label>
                   <Input id="tel" placeholder="(11) 99999-9999" className="bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
                 </div>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setIsLoginOpen(true)}>Enviar Contato</Button>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleAuthOpen('Pro', 'register')}>Enviar Contato</Button>
               </CardContent>
             </Card>
           </div>
