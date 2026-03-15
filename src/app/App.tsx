@@ -13,6 +13,7 @@ import { PlanProvider, usePlan } from '@/app/components/plan-context';
 import { SuperAdminModule } from '@/app/components/super-admin-module';
 import { SidebarAdmin } from '@/app/components/sidebar-admin';
 import { FeatureGate } from '@/app/components/feature-gate';
+import { SettingsModule } from '@/app/components/settings-module';
 import { Toaster } from 'sonner';
 
 type AppPage = 'landing' | 'termos' | 'privacidade' | 'lgpd' | 'app';
@@ -81,6 +82,7 @@ function AppContent() {
       case 'financeiro':  return <FeatureGate module="financeiro"><FinanceiroModule /></FeatureGate>;
       case 'pessoas':     return <FeatureGate module="pessoas"><PessoasModule /></FeatureGate>;
       case 'comercial':   return <FeatureGate module="comercial"><ComercialModule /></FeatureGate>;
+      case 'settings':    return <SettingsModule />;
       default:            return <DashboardModule />;
     }
   };

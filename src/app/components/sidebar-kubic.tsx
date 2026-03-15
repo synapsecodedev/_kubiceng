@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { usePlan } from './plan-context';
 import logoKubic from "../../assets/kubiceng-logo.png";
 
-export type ModuleType = 'dashboard' | 'engenharia' | 'suprimentos' | 'execucao' | 'financeiro' | 'pessoas' | 'comercial';
+export type ModuleType = 'dashboard' | 'engenharia' | 'suprimentos' | 'execucao' | 'financeiro' | 'pessoas' | 'comercial' | 'settings';
 
 interface SidebarKubicProps {
   activeModule: ModuleType;
@@ -116,8 +116,10 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
       {/* Footer */}
       <div className="p-4 border-t border-white/10 space-y-2">
         <button
+          onClick={() => onModuleChange('settings')}
           className={cn(
             "w-full flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-all text-white/80 hover:text-white",
+            activeModule === 'settings' && "bg-[#4A9EFF] text-white shadow-lg",
             collapsed && "justify-center"
           )}
         >

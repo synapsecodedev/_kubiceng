@@ -27,166 +27,33 @@ const app = Fastify({
   pluginTimeout: 30000 
 });
 
-// Schemas
-const registerSchema = z.object({
-  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-  document: z.string().optional(),
-  documentType: z.enum(["cpf", "cnpj"]).optional(),
-  planSlug: z.string().default("pro"),
-});
-
-const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(1, "Senha é obrigatória"),
-});
+import { authRoutes } from "../backend/src/routes/auth.routes";
+import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
+import { dashboardRoutes } from "../backend/src/routes/dashboard.routes";
+import { financeiroRoutes } from "../backend/src/routes/financeiro.routes";
+import { suprimentosRoutes } from "../backend/src/routes/suprimentos.routes";
+import { execucaoRoutes } from "../backend/src/routes/execucao.routes";
+import { pessoasRoutes } from "../backend/src/routes/pessoas.routes";
+import { comercialRoutes } from "../backend/src/routes/comercial.routes";
+import { adminRoutes } from "../backend/src/routes/admin.routes";
+import { healthRoutes } from "../backend/src/routes/health.routes";
 
 let isReady = false;
 async function buildApp() {
   if (isReady) return;
   await app.register(cors, { origin: "*" });
 
-  // --- HEALTH ---
-  app.get("/health", async () => {
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      return { status: "ok", database: "connected", timestamp: new Date().toISOString() };
-    } catch (err: any) {
-      return { status: "error", message: err.message };
-    }
-  });
-
-  // --- LOGIN ---
-  app.post("/auth/login", async (request, reply) => {
-    try {
-      const body = loginSchema.parse(request.body);
-      const { email, password } = body;
-
-      const user = await prisma.user.findUnique({
-        where: { email },
-        include: {
-          subscription: {
-            include: {
-              plan: { include: { features: true } },
-            },
-          },
-        },
-      });
-
-      if (!user) {
-        return reply.status(401).send({ message: "Credenciais inválidas" });
-      }
-
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordValid) {
-        return reply.status(401).send({ message: "Credenciais inválidas" });
-      }
-
-      return {
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
-        subscription: user.subscription ? {
-          status: user.subscription.status,
-          plan: user.subscription.plan.name,
-          slug: user.subscription.plan.slug,
-          features: user.subscription.plan.features.reduce((acc: any, f: any) => {
-            acc[f.module] = f.enabled;
-            return acc;
-          }, {}),
-        } : null,
-      };
-    } catch (err: any) {
-      console.error(err);
-      return reply.status(500).send({ message: "Erro no login", error: err.message });
-    }
-  });
-
-  // --- REGISTER ---
-  app.post("/auth/register", async (request, reply) => {
-    try {
-      const body = registerSchema.parse(request.body);
-      const { name, email, password, document, documentType, planSlug } = body;
-
-      const existingUser = await prisma.user.findUnique({ where: { email } });
-      if (existingUser) {
-        return reply.status(400).send({ message: "Email já cadastrado" });
-      }
-
-      const plan = await prisma.plan.findUnique({ where: { slug: planSlug } });
-      if (!plan) {
-        return reply.status(404).send({ message: "Plano não encontrado" });
-      }
-
-      const passwordHash = await bcrypt.hash(password, 10);
-
-      const result = await prisma.$transaction(async (tx: any) => {
-        const user = await tx.user.create({
-          data: {
-            name,
-            email,
-            passwordHash,
-            document: document || null,
-            documentType: documentType || null,
-            role: "user",
-          },
-        });
-
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + 7);
-
-        await tx.subscription.create({
-          data: {
-            userId: user.id,
-            planId: plan.id,
-            status: "trial",
-            trialEnd,
-          },
-        });
-
-        return user;
-      });
-
-      return {
-        user: { id: result.id, name: result.name, email: result.email },
-        message: "Usuário registrado com sucesso"
-      };
-    } catch (err: any) {
-      console.error(err);
-      return reply.status(500).send({ message: "Erro no registro", error: err.message });
-    }
-  });
-
-  // --- SESSION CHECK ---
-  app.get("/auth/me/:userId", async (request, reply) => {
-    try {
-      const { userId } = z.object({ userId: z.string().uuid() }).parse(request.params);
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          subscription: {
-            include: { plan: { include: { features: true } } },
-          },
-        },
-      });
-
-      if (!user) return reply.status(404).send({ message: "Não encontrado" });
-
-      return {
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
-        subscription: user.subscription ? {
-          status: user.subscription.status,
-          plan: user.subscription.plan.name,
-          slug: user.subscription.plan.slug,
-          features: user.subscription.plan.features.reduce((acc: any, f: any) => {
-            acc[f.module] = f.enabled;
-            return acc;
-          }, {}),
-        } : null,
-      };
-    } catch (err: any) {
-      return reply.status(500).send({ message: "Erro na sessão", error: err.message });
-    }
-  });
+  // Register all routes from the backend
+  await app.register(healthRoutes);
+  await app.register(authRoutes);
+  await app.register(adminRoutes);
+  await app.register(engenhariaRoutes);
+  await app.register(execucaoRoutes);
+  await app.register(financeiroRoutes);
+  await app.register(pessoasRoutes);
+  await app.register(suprimentosRoutes);
+  await app.register(comercialRoutes);
+  await app.register(dashboardRoutes);
 
   await app.ready();
   isReady = true;
