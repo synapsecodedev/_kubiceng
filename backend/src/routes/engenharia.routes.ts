@@ -4,12 +4,18 @@ import { z } from 'zod'
 
 export async function engenhariaRoutes(app: FastifyInstance) {
   // GET all projects
-  app.get('/projects', async () => {
-    return prisma.project.findMany({ orderBy: { date: 'desc' } })
+  app.get('/projects', async (request) => {
+    const userId = request.headers['x-user-id'] as string;
+    const filter = userId ? { userId } : {};
+    return prisma.project.findMany({ 
+      where: filter as any,
+      orderBy: { date: 'desc' } 
+    })
   })
 
   // POST create project
   app.post('/projects', async (request, reply) => {
+    const userId = request.headers['x-user-id'] as string;
     const schema = z.object({
       name: z.string().min(1),
       version: z.string().min(1),
@@ -23,6 +29,7 @@ export async function engenhariaRoutes(app: FastifyInstance) {
         version: body.version,
         status: body.status,
         date: body.date ? new Date(body.date) : new Date(),
+        userId: userId as any, // Associar ao usuário logado
       },
     })
     return reply.code(201).send(project)

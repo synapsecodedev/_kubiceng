@@ -6,8 +6,15 @@ export async function execucaoRoutes(app: FastifyInstance) {
   // ===== RDO =====
   app.get('/rdos', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.rdo.findMany({ 
-      where: (projectId ? { projectId } : {}) as any,
+      where: filter,
       orderBy: { data: 'desc' } 
     })
   })
@@ -51,8 +58,15 @@ export async function execucaoRoutes(app: FastifyInstance) {
   // ===== FVS =====
   app.get('/fvs', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.fichaVerificacao.findMany({ 
-      where: (projectId ? { projectId } : {}) as any,
+      where: filter,
       orderBy: { data: 'desc' } 
     })
   })
@@ -87,8 +101,15 @@ export async function execucaoRoutes(app: FastifyInstance) {
   // ===== ESTOQUE =====
   app.get('/estoque', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.itemEstoque.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: filter,
       orderBy: { material: 'asc' } 
     })
   })

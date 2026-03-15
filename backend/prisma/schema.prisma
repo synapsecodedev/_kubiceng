@@ -18,6 +18,8 @@ model Project {
   status    String   // 'aprovado', 'revisao', 'em_analise'
   date      DateTime @default(now())
   fileUrl   String?
+  userId    String?  // Propriedade para multitenancy
+  user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -330,6 +332,7 @@ model User {
   companyLogoUrl String?
 
   subscription Subscription?
+  projects     Project[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

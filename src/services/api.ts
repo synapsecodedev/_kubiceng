@@ -7,6 +7,22 @@ export const api = axios.create({
   baseURL: apiUrl || (isProd ? '/api' : 'http://localhost:3333'),
 });
 
+// Interceptor global de requisição para multitenancy
+api.interceptors.request.use((config) => {
+  const savedUser = localStorage.getItem('kubic_user');
+  if (savedUser && savedUser !== 'undefined') {
+    try {
+      const user = JSON.parse(savedUser);
+      if (user?.id) {
+        config.headers['x-user-id'] = user.id;
+      }
+    } catch (err) {
+      console.error('Erro ao processar x-user-id no interceptor:', err);
+    }
+  }
+  return config;
+});
+
 // Interceptor global de erros
 api.interceptors.response.use(
   (response) => response,

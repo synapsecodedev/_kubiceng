@@ -6,8 +6,15 @@ export async function pessoasRoutes(app: FastifyInstance) {
   // ===== FUNCIONÁRIOS =====
   app.get('/funcionarios', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.funcionario.findMany({ 
-      where: (projectId ? { projectId } : {}) as any,
+      where: filter,
       orderBy: { nome: 'asc' } 
     })
   })
@@ -89,17 +96,25 @@ export async function pessoasRoutes(app: FastifyInstance) {
   // ===== PONTO =====
   app.get('/ponto', async (request) => {
     const { data, projectId } = request.query as { data?: string, projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
     const date = data ? new Date(data) : new Date()
     const start = new Date(date)
     start.setHours(0, 0, 0, 0)
     const end = new Date(date)
     end.setHours(23, 59, 59, 999)
 
-    return prisma.registroPonto.findMany({
-      where: { 
+    const filter: any = { 
         data: { gte: start, lte: end },
-        funcionario: projectId ? { projectId } : {},
-      },
+    };
+    
+    if (projectId) {
+        filter.funcionario = { projectId };
+    } else if (userId) {
+        filter.funcionario = { project: { userId } };
+    }
+
+    return prisma.registroPonto.findMany({
+      where: filter,
       include: { funcionario: { select: { nome: true } } },
     })
   })

@@ -5,8 +5,21 @@ export async function dashboardRoutes(app: FastifyInstance) {
   // KPIs agregados
   app.get('/dashboard/kpis', async (request) => {
     const { projectId } = request.query as { projectId?: string }
-    const filter = projectId ? { projectId } : {}
-    const projectFilter = projectId ? { id: projectId } : {}
+    const userId = request.headers['x-user-id'] as string;
+
+    // Filter by project if provided, otherwise filter by global userId to get overall company data
+    const filter: any = projectId ? { projectId } : {}
+    const projectFilter: any = projectId ? { id: projectId } : {}
+
+    if (userId) {
+      projectFilter.userId = userId;
+      // For related models, we filter by their link to the project, 
+      // which we already validated/filtered above IF projectId was provided.
+      // If NOT provided, we need to filter these models by userId via their project relation.
+      if (!projectId) {
+        filter.project = { userId };
+      }
+    }
 
     const [
       totalProjetos,
@@ -26,7 +39,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
     ])
 
     // Estoque crítico
-    const estoqueItems = await prisma.itemEstoque.findMany({ where: filter as any })
+    const estoqueItems = await prisma.itemEstoque.findMany({ where: filter })
     const estoqueCritico = estoqueItems.filter(e => e.qtdAtual < e.qtdMinima).length
 
     const alertasTotal = alertasCriticos + estoqueCritico

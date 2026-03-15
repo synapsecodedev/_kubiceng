@@ -6,8 +6,15 @@ export async function financeiroRoutes(app: FastifyInstance) {
   // ===== CONTAS A PAGAR =====
   app.get('/contas-pagar', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+    
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.contaPagar.findMany({ 
-      where: (projectId ? { projectId } : {}) as any,
+      where: filter,
       orderBy: { vencimento: 'asc' } 
     })
   })
@@ -40,8 +47,15 @@ export async function financeiroRoutes(app: FastifyInstance) {
   // ===== MEDIÇÕES =====
   app.get('/medicoes', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.medicao.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: filter,
       orderBy: { createdAt: 'desc' } 
     })
   })
@@ -81,7 +95,13 @@ export async function financeiroRoutes(app: FastifyInstance) {
   // ===== FLUXO DE CAIXA (agregado) =====
   app.get('/fluxo-caixa', async (request) => {
     const { projectId } = request.query as { projectId?: string }
-    const filter = projectId ? { projectId } : {}
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     const medicoes = await prisma.medicao.findMany({ where: { status: 'aprovado', ...filter } })
     const contas = await prisma.contaPagar.findMany({ where: { status: 'pago', ...filter } })
 

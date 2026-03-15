@@ -6,8 +6,15 @@ export async function suprimentosRoutes(app: FastifyInstance) {
   // ===== REQUISIÇÕES =====
   app.get('/requisicoes', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.requisicao.findMany({
-      where: (projectId ? { projectId } : {}) as any,
+      where: filter,
       include: { cotacoes: true },
       orderBy: { createdAt: 'desc' },
     })
@@ -39,8 +46,12 @@ export async function suprimentosRoutes(app: FastifyInstance) {
   })
 
   // ===== COTAÇÕES =====
-  app.get('/cotacoes', async () => {
+  app.get('/cotacoes', async (request) => {
+    const userId = request.headers['x-user-id'] as string;
+    const filter = userId ? { requisicao: { project: { userId } } } : {};
+
     return prisma.cotacao.findMany({
+      where: filter as any,
       include: { requisicao: true },
       orderBy: { createdAt: 'desc' },
     })
@@ -89,8 +100,15 @@ export async function suprimentosRoutes(app: FastifyInstance) {
   // ===== ORDENS DE COMPRA =====
   app.get('/ordens-compra', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.ordemCompra.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: filter,
       orderBy: { createdAt: 'desc' } 
     })
   })

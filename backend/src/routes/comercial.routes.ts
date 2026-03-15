@@ -6,8 +6,15 @@ export async function comercialRoutes(app: FastifyInstance) {
   // ===== CLIENTES =====
   app.get('/clientes', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { projectId } : {}
+    if (userId && !projectId) {
+      filter.project = { userId };
+    }
+
     return prisma.cliente.findMany({
-      where: (projectId ? { projectId } : {}) as any,
+      where: filter,
       include: { chamados: true },
       orderBy: { nome: 'asc' },
     })
@@ -43,8 +50,15 @@ export async function comercialRoutes(app: FastifyInstance) {
   // ===== CHAMADOS =====
   app.get('/chamados', async (request) => {
     const { projectId } = request.query as { projectId?: string }
+    const userId = request.headers['x-user-id'] as string;
+
+    const filter: any = projectId ? { cliente: { projectId } } : {}
+    if (userId && !projectId) {
+      filter.cliente = { project: { userId } };
+    }
+
     return prisma.chamado.findMany({
-      where: projectId ? { cliente: { projectId } } : {},
+      where: filter as any,
       include: { cliente: { select: { nome: true, unidade: true } } },
       orderBy: { createdAt: 'desc' },
     })
