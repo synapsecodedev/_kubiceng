@@ -3,19 +3,6 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 
-// Relative imports
-import { authRoutes } from "../backend/src/routes/auth.routes";
-import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
-import { dashboardRoutes } from "../backend/src/routes/dashboard.routes";
-import { financeiroRoutes } from "../backend/src/routes/financeiro.routes";
-import { suprimentosRoutes } from "../backend/src/routes/suprimentos.routes";
-import { execucaoRoutes } from "../backend/src/routes/execucao.routes";
-import { pessoasRoutes } from "../backend/src/routes/pessoas.routes";
-import { comercialRoutes } from "../backend/src/routes/comercial.routes";
-import { adminRoutes } from "../backend/src/routes/admin.routes";
-import { healthRoutes } from "../backend/src/routes/health.routes";
-import { profileRoutes } from "../backend/src/routes/profile.routes";
-
 console.log("LAMBDA_INIT: Module Load");
 
 const app = fastify({ 
@@ -54,33 +41,38 @@ async function configureApp() {
   });
 
   try {
-    console.log("LAMBDA_INIT: Registering healthRoutes...");
-    await app.register(healthRoutes as any);
+    console.log("LAMBDA_INIT: Registering Routes (Dynamic)...");
     
-    console.log("LAMBDA_INIT: Registering authRoutes...");
-    await app.register(authRoutes as any);
-    
-    console.log("LAMBDA_INIT: Registering profileRoutes...");
-    await app.register(profileRoutes as any);
-    
-    console.log("LAMBDA_INIT: Registering adminRoutes...");
-    await app.register(adminRoutes as any);
-    
-    console.log("LAMBDA_INIT: Registering domain routes...");
-    await app.register(engenhariaRoutes as any);
-    await app.register(execucaoRoutes as any);
-    await app.register(financeiroRoutes as any);
-    await app.register(pessoasRoutes as any);
-    await app.register(suprimentosRoutes as any);
-    await app.register(comercialRoutes as any);
-    await app.register(dashboardRoutes as any);
+    // Helper to register routes with isolation
+    const register = async (name: string, path: string) => {
+      console.log(`LAMBDA_INIT: Loading ${name}...`);
+      try {
+        const module = await import(path);
+        const routeFn = module[name] || module.default;
+        await app.register(routeFn as any);
+      } catch (e: any) {
+        console.error(`LAMBDA_INIT: Failed to load ${name}`, e);
+        throw new Error(`Module Load Failure: ${name} -> ${e.message}`);
+      }
+    };
 
-    console.log("LAMBDA_INIT: Calling app.ready()...");
+    await register("healthRoutes", "../backend/src/routes/health.routes");
+    await register("authRoutes", "../backend/src/routes/auth.routes");
+    await register("profileRoutes", "../backend/src/routes/profile.routes");
+    await register("adminRoutes", "../backend/src/routes/admin.routes");
+    await register("engenhariaRoutes", "../backend/src/routes/engenharia.routes");
+    await register("execucaoRoutes", "../backend/src/routes/execucao.routes");
+    await register("financeiroRoutes", "../backend/src/routes/financeiro.routes");
+    await register("pessoasRoutes", "../backend/src/routes/pessoas.routes");
+    await register("suprimentosRoutes", "../backend/src/routes/suprimentos.routes");
+    await register("comercialRoutes", "../backend/src/routes/comercial.routes");
+    await register("dashboardRoutes", "../backend/src/routes/dashboard.routes");
+
     await app.ready();
     isConfigured = true;
     console.log("LAMBDA_INIT: Configuration Complete");
   } catch (err: any) {
-    console.error("DIAGNOSTIC: Configuration Failed at stage:", isConfigured ? "Ready" : "Registration", err);
+    console.error("DIAGNOSTIC: Configuration Failed", err);
     throw err;
   }
 }
@@ -89,7 +81,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await configureApp();
     
-    // Normalize URL: remove /api prefix if present
     const url = req.url?.replace(/^\/api/, "") || "/";
     console.log(`LAMBDA_EXEC: ${req.method} ${url}`);
     
