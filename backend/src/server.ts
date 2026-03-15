@@ -33,6 +33,29 @@ app.register(dashboardRoutes);
 app.register(profileRoutes);
 app.register(multipart);
 
+app.get("/diagnostic", async (request, reply) => {
+  try {
+    const userCount = await prisma.user.count();
+    const planCount = await prisma.plan.count();
+    const subCount = await prisma.subscription.count();
+    const latestUsers = await prisma.user.findMany({
+      take: 5,
+      select: { email: true, role: true }
+    });
+    
+    return { 
+      success: true, 
+      counts: { users: userCount, plans: planCount, subscriptions: subCount },
+      latestUsers
+    };
+  } catch (err) {
+    return reply.status(500).send({ 
+      success: false, 
+      error: String(err)
+    });
+  }
+});
+
 app.get("/test-db", async (request, reply) => {
   try {
     const result = await (prisma as any).$queryRaw`SELECT 1 as connected`;
