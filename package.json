@@ -1,7 +1,10 @@
 {
   "name": "@figma/my-make-file",
   "private": true,
-  "version": "1.0.1",
+  "engines": {
+    "node": "20.x"
+  },
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "build": "vite build",
@@ -77,7 +80,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^25.0.10",
+    "@types/node": "^20.0.0",
     "@vercel/node": "^5.6.9",
     "@vitejs/plugin-react": "4.7.0",
     "jsdom": "^27.4.0",

@@ -66,7 +66,7 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
   };
 
   return (
-    <div className="w-full max-w-[850px] h-[580px]" style={{ perspective: '2000px' }}>
+    <div className="w-full max-w-[850px] h-[650px]" style={{ perspective: '2000px' }}>
       <motion.div
         className="relative w-full h-full"
         style={{ transformStyle: 'preserve-3d' }}
@@ -160,7 +160,8 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
             <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-blue-400/10 rounded-full blur-3xl animate-pulse" />
             
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col items-center">
+              <img src={logo} alt="KubicEng" className="h-10 mb-8 mx-auto brightness-0 invert" />
               <h2 className="text-3xl font-bold mb-4">Novo aqui?</h2>
               <p className="text-white/80 mb-8 leading-relaxed text-sm">
                 Crie sua conta agora e comece a digitalizar seus canteiros de obra.
@@ -184,7 +185,8 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
           {/* Info Section (Left on back) */}
           <div className="flex-[0.8] bg-[#0A2E50] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col items-center">
+              <img src={logo} alt="KubicEng" className="h-10 mb-8 mx-auto brightness-0 invert" />
               <h2 className="text-3xl font-bold mb-4">Seja bem-vindo!</h2>
               <p className="text-white/80 mb-8 leading-relaxed text-sm">
                 Para manter-se conectado, faça login com suas informações pessoais.
@@ -202,7 +204,7 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
           {/* Form Section */}
           <div className="flex-[1.2] p-10 flex flex-col justify-center overflow-y-auto">
             <div className="mb-6 flex flex-col items-center sm:items-start text-left w-full">
-              <img src={logo} alt="KubicEng" className="h-8 mb-4" />
+              <img src={logo} alt="KubicEng" className="h-10 mb-4" />
               <h2 className="text-2xl font-bold text-[#0A2E50] mb-1">Criar Nova Conta</h2>
               <p className="text-xs text-gray-500">Comece seu teste grátis no plano <strong>{defaultPlan}</strong>.</p>
             </div>

@@ -174,3 +174,5 @@ export async function adminRoutes(app: FastifyInstance) {
     return { message: 'Plano atualizado com sucesso' }
   })
 }
+
+export default adminRoutes;

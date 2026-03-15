@@ -74,3 +74,6 @@ export async function comercialRoutes(app: FastifyInstance) {
     return prisma.chamado.update({ where: { id }, data: { status: 'concluido' } })
   })
 }
+
+export default comercialRoutes;
+

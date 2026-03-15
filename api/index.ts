@@ -2,18 +2,20 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import fastify from "fastify";
 import cors from "@fastify/cors";
 
-// Static imports using backend alias for Vercel stability
-import { authRoutes } from "backend/routes/auth.routes";
-import { engenhariaRoutes } from "backend/routes/engenharia.routes";
-import { dashboardRoutes } from "backend/routes/dashboard.routes";
-import { financeiroRoutes } from "backend/routes/financeiro.routes";
-import { suprimentosRoutes } from "backend/routes/suprimentos.routes";
-import { execucaoRoutes } from "backend/routes/execucao.routes";
-import { pessoasRoutes } from "backend/routes/pessoas.routes";
-import { comercialRoutes } from "backend/routes/comercial.routes";
-import { adminRoutes } from "backend/routes/admin.routes";
-import { healthRoutes } from "backend/routes/health.routes";
-import { profileRoutes } from "backend/routes/profile.routes";
+console.log("LAMBDA_INIT: Starting FULL KubicEng API Handler");
+
+// Relative imports
+import { authRoutes } from "../backend/src/routes/auth.routes";
+import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
+import { dashboardRoutes } from "../backend/src/routes/dashboard.routes";
+import { financeiroRoutes } from "../backend/src/routes/financeiro.routes";
+import { suprimentosRoutes } from "../backend/src/routes/suprimentos.routes";
+import { execucaoRoutes } from "../backend/src/routes/execucao.routes";
+import { pessoasRoutes } from "../backend/src/routes/pessoas.routes";
+import { comercialRoutes } from "../backend/src/routes/comercial.routes";
+import { adminRoutes } from "../backend/src/routes/admin.routes";
+import { healthRoutes } from "../backend/src/routes/health.routes";
+import { profileRoutes } from "../backend/src/routes/profile.routes";
 
 const app = fastify({ 
   logger: true,
@@ -24,15 +26,15 @@ let isReady = false;
 
 async function buildApp() {
   if (isReady) return;
+  console.log("LAMBDA_INIT: Building App...");
   
   await app.register(cors, { origin: "*" });
 
-  try {
-    // Environmental sanity check
-    if (!process.env.DATABASE_URL) {
-      console.warn("DIAGNOSTIC: DATABASE_URL is missing from environment");
-    }
+  app.get("/ping", async () => {
+    return { status: "pong", timestamp: new Date().toISOString() };
+  });
 
+  try {
     // Register all routes
     await app.register(healthRoutes);
     await app.register(authRoutes);
@@ -48,6 +50,7 @@ async function buildApp() {
 
     await app.ready();
     isReady = true;
+    console.log("LAMBDA_INIT: App is Ready");
   } catch (err: any) {
     console.error("DIAGNOSTIC: Route Registration Failed", err);
     throw err;
@@ -83,14 +86,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error: any) {
     console.error("HANDLER CRASH:", error);
     res.status(500).json({
-      error: "Vercel Worker Error (Alias Resolution)",
+      error: "Vercel Worker Error",
       message: error.message,
-      stack: error.stack,
-      diagnostics: {
-        isReady,
-        nodeEnv: process.env.NODE_ENV,
-        hasDbUrl: !!process.env.DATABASE_URL
-      }
+      stack: error.stack
     });
   }
+}
+
+// SELF TEST (only runs if executed directly via npx tsx)
+if (process.argv[1].endsWith('index.ts')) {
+   console.log("SELF TEST STARTING...");
+   buildApp().then(() => {
+     console.log("SELF TEST SUCCESS: App built successfully");
+     process.exit(0);
+   }).catch(err => {
+     console.error("SELF TEST FAILED:", err);
+     process.exit(1);
+   });
 }

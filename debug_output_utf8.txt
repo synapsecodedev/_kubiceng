@@ -1,0 +1,41 @@
+﻿node.exe : D:\_RodrigoPiresDev
+\_programacao\_kubiceng\api\in
+dex.ts:16
+No linha:1 caractere:1
++ & "D:\Node/node.exe" "D:\Nod
+e/node_modules/npm/bin/npx-cli
+.js" tsx ap ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (D:\_Rodri  
+  goPire...api\index.ts:16:   
+ String) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+import { adminRoutes } from ".
+./backend/src/routes/admin.rou
+tes";
+         ^
+SyntaxError: The requested 
+module '../backend/src/routes/
+admin.routes' does not 
+provide an export named 
+'adminRoutes'
+    at #_instantiate (node:int
+ernal/modules/esm/module_job:2
+54:21)
+    at async ModuleJob.run (no
+de:internal/modules/esm/module
+_job:369:5)
+    at async onImport.tracePro
+mise.__proto__ (node:internal/
+modules/esm/loader:691:26)
+    at async asyncRunEntryPoin
+tWithESMLoader (node:internal/
+modules/run_main:101:5)
+
+Node.js v24.11.0

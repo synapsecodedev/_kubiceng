@@ -148,7 +148,7 @@ function Footer({ onNavigate }: { onNavigate: (page: string) => void }) {
         <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-600">
           <div className="flex items-center gap-3">
             <span>© 2026 Synapse Code. Todos os direitos reservados.</span>
-            <span className="bg-white/5 text-gray-500 px-2 py-0.5 rounded text-xs">v1.0.0</span>
+            <span className="bg-white/5 text-gray-500 px-2 py-0.5 rounded text-xs">v1.1.0</span>
           </div>
           <div className="flex items-center gap-6">
             <button onClick={() => onNavigate('termos')} className="hover:text-gray-400 transition-colors">Termos de Uso</button>

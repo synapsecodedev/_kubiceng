@@ -103,3 +103,6 @@ export async function financeiroRoutes(app: FastifyInstance) {
     return Object.values(meses).sort((a, b) => a.mes.localeCompare(b.mes))
   })
 }
+
+export default financeiroRoutes;
+

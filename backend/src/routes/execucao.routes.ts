@@ -157,3 +157,6 @@ export async function execucaoRoutes(app: FastifyInstance) {
     return reply.code(201).send(mov)
   })
 }
+
+export default execucaoRoutes;
+

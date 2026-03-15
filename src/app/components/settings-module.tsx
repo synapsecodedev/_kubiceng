@@ -4,10 +4,8 @@ import { Button } from '@/app/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { User, Building, Lock, Save, Camera, Upload } from 'lucide-react';
 import { usePlan } from './plan-context';
-import axios from 'axios';
+import { api } from '@/services/api';
 import { toast } from 'sonner';
-
-const API_URL = 'http://localhost:3333';
 
 export function SettingsModule() {
   const { user, login } = usePlan();
@@ -45,7 +43,7 @@ export function SettingsModule() {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/profile/${user?.id}`);
+      const response = await api.get(`/profile/${user?.id}`);
       const data = response.data;
       setProfile({
         name: data.name,
@@ -72,7 +70,7 @@ export function SettingsModule() {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${API_URL}/profile/upload?type=${type}&userId=${user.id}`, formData, {
+      const response = await api.post(`/profile/upload?type=${type}&userId=${user.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -97,7 +95,7 @@ export function SettingsModule() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      await axios.put(`${API_URL}/profile/${user.id}`, {
+      await api.put(`/profile/${user.id}`, {
         name: profile.name,
         avatarUrl: profile.avatarUrl
       });
@@ -115,7 +113,7 @@ export function SettingsModule() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      await axios.put(`${API_URL}/profile/${user.id}/company`, {
+      await api.put(`/profile/${user.id}/company`, {
         companyName: company.name,
         companyCnpj: company.cnpj,
         companyAddress: company.address,

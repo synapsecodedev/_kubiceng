@@ -384,3 +384,5 @@ export async function authRoutes(app: FastifyInstance) {
     }
   });
 }
+
+export default authRoutes;

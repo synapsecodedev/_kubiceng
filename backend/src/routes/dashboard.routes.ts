@@ -134,7 +134,8 @@ export async function dashboardRoutes(app: FastifyInstance) {
         data: new Date().toLocaleDateString('pt-BR'),
       })
     }
-
-    return alertas
   })
 }
+
+export default dashboardRoutes;
+

@@ -129,3 +129,6 @@ export async function pessoasRoutes(app: FastifyInstance) {
     return reply.code(201).send(ponto)
   })
 }
+
+export default pessoasRoutes;
+

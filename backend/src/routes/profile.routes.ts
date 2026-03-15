@@ -104,3 +104,5 @@ export async function profileRoutes(app: FastifyInstance) {
     return { publicUrl }
   })
 }
+
+export default profileRoutes;

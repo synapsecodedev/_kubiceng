@@ -119,3 +119,6 @@ export async function engenhariaRoutes(app: FastifyInstance) {
     return prisma.budgetItem.update({ where: { id: itemId }, data: body })
   })
 }
+
+export default engenhariaRoutes;
+

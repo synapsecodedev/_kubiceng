@@ -113,3 +113,6 @@ export async function suprimentosRoutes(app: FastifyInstance) {
     return prisma.ordemCompra.update({ where: { id }, data: { status: body.status } })
   })
 }
+
+export default suprimentosRoutes;
+
