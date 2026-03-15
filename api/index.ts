@@ -2,41 +2,56 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import { authRoutes } from "../backend/src/routes/auth.routes";
-import { healthRoutes } from "../backend/src/routes/health.routes";
 
-const app = Fastify({ logger: false });
+// Runtime port override for Supabase Pooler (Vercel/Production)
+if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes(':5432')) {
+  process.env.DATABASE_URL = process.env.DATABASE_URL.replace(':5432', ':6543');
+  console.log('Runtime DATABASE_URL port override to 6543');
+}
+if (process.env.DIRECT_URL && process.env.DIRECT_URL.includes(':5432')) {
+  process.env.DIRECT_URL = process.env.DIRECT_URL.replace(':5432', ':6543');
+}
 
-let isReady = false;
-async function buildApp() {
-  if (isReady) return;
-  await app.register(cors, { origin: "*" });
-  await app.register(healthRoutes);
-  await app.register(authRoutes);
-  await app.ready();
-  isReady = true;
+// Delayed initialization to catch boot errors
+let app: any;
+
+async function initApp() {
+  if (app) return app;
+  
+  const fastify = Fastify({ logger: true });
+  
+  // Dynamic imports to handle potential bundling issues
+  const { authRoutes } = await import("../backend/src/routes/auth.routes");
+  const { healthRoutes } = await import("../backend/src/routes/health.routes");
+
+  await fastify.register(cors, { origin: "*" });
+  await fastify.register(healthRoutes);
+  await fastify.register(authRoutes);
+  await fastify.ready();
+  
+  app = fastify;
+  return app;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Unmistakable new status marker
-  if (req.url === '/api/version') {
-    return res.status(200).json({ version: "v4_stable_auth_only" });
+  // Ultra-stable debug route
+  if (req.url === '/api/debug-v5') {
+    return res.status(200).json({ 
+      status: "debug_v5_booted", 
+      env_db: !!process.env.DATABASE_URL,
+      db_port: process.env.DATABASE_URL?.split(':')[3]?.split('/')[0] || "unknown"
+    });
   }
 
   try {
-    if (req.url === '/api' || req.url === '/api/') {
-      return res.status(200).json({ status: "v4_ready" });
-    }
-
-    await buildApp();
+    const server = await initApp();
     const url = req.url?.replace(/^\/api/, "") || "/";
     
-    // Support body processing
     const payload = req.body && typeof req.body === 'object' 
       ? JSON.stringify(req.body) 
       : req.body;
 
-    const response = await app.inject({
+    const response = await server.inject({
       method: req.method as any,
       url,
       headers: req.headers as any,
@@ -48,11 +63,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (contentType) res.setHeader("content-type", contentType);
     res.send(response.body);
   } catch (error: any) {
-    console.error("VERCEL API ERROR:", error);
+    console.error("V5 BOOT ERROR:", error);
     res.status(500).json({
-      error: "Internal Server Error (api/index_v4)",
+      error: "Vercel Boot Error (v5)",
       message: error.message,
       stack: error.stack,
+      prisma_hint: error.message?.includes('Prisma') ? "Prisma Init Failed" : undefined
     });
   }
 }
