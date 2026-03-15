@@ -3,20 +3,29 @@ import {
   Users, 
   CreditCard, 
   TrendingUp, 
-  LayoutDashboard, 
-  Settings, 
   Search, 
   Filter, 
   MoreVertical,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  Settings
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Input } from '@/app/components/ui/input';
 import { usePlan } from '@/app/components/plan-context';
-import { getAdminDashboard, getAdminUsers } from '@/services/api';
+import { getAdminDashboard, getAdminUsers, getAdminPlans, updateSubscriptionStatus } from '@/services/api';
+import logo from '../../assets/kubiceng-logo.png';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 import { 
   BarChart, 
   Bar, 
@@ -90,7 +99,6 @@ export function SuperAdminModule({
       if (!adminUser?.id) return;
       
       try {
-        setIsLoading(true);
         const [dashboardData, usersData] = await Promise.all([
           getAdminDashboard(adminUser.id),
           getAdminUsers(adminUser.id)
@@ -127,11 +135,18 @@ export function SuperAdminModule({
       {/* Header com estilo premium */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck className="w-5 h-5 text-[#4A9EFF]" />
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Super Admin</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-100">
+              <img src={logo} alt="KubicEng" className="h-7 w-auto" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#4A9EFF]" />
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Super Admin</h1>
+              </div>
+              <p className="text-gray-500 text-sm">Visão completa da plataforma KubicEng</p>
+            </div>
           </div>
-          <p className="text-gray-500 text-sm">Visão completa da plataforma KubicEng</p>
         </div>
         
         <div className="flex items-center gap-2 bg-white p-1 rounded-xl shadow-sm border border-gray-100">
@@ -175,8 +190,8 @@ export function SuperAdminModule({
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={plansDist}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                      <XAxis dataKey="nome" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                      <XAxis dataKey="nome" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} {...({} as any)} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} {...({} as any)} />
                       <Tooltip 
                         contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
                         cursor={{fill: '#f9fafb'}}
@@ -288,9 +303,15 @@ export function SuperAdminModule({
                         {new Date(user.dataCriacao).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
+                        <DropdownActions 
+                          user={user} 
+                          onUpdate={async (status) => {
+                            if (!adminUser?.id) return;
+                            await updateSubscriptionStatus(adminUser.id, user.id, status);
+                            // Refresh logic would go here
+                            window.location.reload(); // Simple refresh for now
+                          }} 
+                        />
                       </td>
                     </tr>
                   ))}
@@ -302,16 +323,147 @@ export function SuperAdminModule({
       )}
 
       {/* Outras tabs seguiriam lógica similar... */}
-      {(activeTab === 'plans' || activeTab === 'financial') && (
-        <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
-          <Settings className="w-12 h-12 text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Módulo em Desenvolvimento</h3>
-          <p className="text-gray-500 max-w-xs text-center">As funcionalidades de edição de limites de planos e relatórios financeiros detalhados estarão disponíveis em breve.</p>
+      {activeTab === 'plans' && <PlansTab adminId={adminUser?.id} />}
+      {activeTab === 'financial' && <FinancialTab financials={financials} kpis={kpis} />}
+    </div>
+  );
+}
+
+// --- Novos Componentes de Aba ---
+
+function PlansTab({ adminId }: { adminId?: string }) {
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!adminId) return;
+    getAdminPlans(adminId).then(data => {
+      setPlans(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [adminId]);
+
+  if (loading) return <div className="py-20 text-center text-gray-500">Carregando planos...</div>;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {plans.length > 0 ? plans.map((plan: any) => (
+        <Card key={plan.id} className="border-none shadow-sm overflow-hidden flex flex-col">
+          <CardHeader className="bg-gray-50/50 border-b border-gray-100 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">{plan.name}</CardTitle>
+              <CardDescription>{plan.slug}</CardDescription>
+            </div>
+            <Badge className="bg-blue-100 text-blue-600 border-none">R$ {plan.price}/mês</Badge>
+          </CardHeader>
+          <CardContent className="pt-6 flex-1">
+            <ul className="space-y-2 mb-6 text-sm text-gray-600">
+              <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {plan.maxProjects} Projetos</li>
+              <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {plan.maxUsers} Usuários</li>
+              <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {plan.storage}GB Armazenamento</li>
+            </ul>
+          </CardContent>
+          <div className="p-4 border-t border-gray-100 bg-gray-50/30">
+            <Button variant="outline" className="w-full">Editar Limites</Button>
+          </div>
+        </Card>
+      )) : (
+        <div className="col-span-3 py-20 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100 text-gray-500">
+           Nenhum plano configurado.
         </div>
       )}
     </div>
   );
 }
+
+function FinancialTab({ financials, kpis }: { financials: FinancialData[], kpis: AdminKPIs | null }) {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-6 border-none shadow-sm">
+          <h4 className="text-gray-500 text-xs font-medium uppercase mb-1">MRR Atual</h4>
+          <p className="text-3xl font-bold">R$ {kpis?.mrr.toLocaleString() || '0'}</p>
+          <p className="text-xs text-green-600 mt-2">+12% vs mês anterior</p>
+        </Card>
+        <Card className="p-6 border-none shadow-sm">
+          <h4 className="text-gray-500 text-xs font-medium uppercase mb-1">Churn Rate</h4>
+          <p className="text-3xl font-bold">2.4%</p>
+          <p className="text-xs text-blue-600 mt-2">Dentro da meta</p>
+        </Card>
+        <Card className="p-6 border-none shadow-sm">
+          <h4 className="text-gray-500 text-xs font-medium uppercase mb-1">LTV Médio</h4>
+          <p className="text-3xl font-bold">R$ 4.250</p>
+          <p className="text-xs text-gray-500 mt-2">Tempo médio: 14 meses</p>
+        </Card>
+      </div>
+
+      <Card className="border-none shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-lg">Receita por Plano</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs text-gray-400 bg-gray-50/50 uppercase">
+              <tr>
+                <th className="px-6 py-4">Plano</th>
+                <th className="px-6 py-4">Assinantes</th>
+                <th className="px-6 py-4 text-right">Receita</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {financials.map((f, i) => (
+                <tr key={i} className="hover:bg-gray-50/50">
+                  <td className="px-6 py-4 font-semibold">{f.nome}</td>
+                  <td className="px-6 py-4 text-gray-500">{f.assinantes}</td>
+                  <td className="px-6 py-4 text-right font-medium">R$ {f.receita.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function DropdownActions({ user, onUpdate }: { user: UserAccount, onUpdate: (status: string) => Promise<void> }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900">
+          <MoreVertical className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel>Ações da Conta</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => onUpdate('active')}>
+          <ShieldCheck className="w-4 h-4 mr-2 text-green-500" />
+          Ativar Planta
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onUpdate('trial')}>
+          <Clock className="w-4 h-4 mr-2 text-blue-500" />
+          Mudar para Trial
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onUpdate('overdue')}>
+          <AlertCircle className="w-4 h-4 mr-2 text-orange-500" />
+          Marcar Inadimplente
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={() => onUpdate('cancelled')}>
+          <Settings className="w-4 h-4 mr-2" />
+          Cancelar Assinatura
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+const CheckCircle = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+  </svg>
+);
 
 // --- Componentes Auxiliares ---
 

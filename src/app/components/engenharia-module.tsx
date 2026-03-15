@@ -1,7 +1,7 @@
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { FileText, Upload, FolderOpen, Calendar, DollarSign, Plus, Trash2 } from 'lucide-react';
+import { FileText, Upload, FolderOpen, Calendar, DollarSign, Plus, Trash2, ArrowLeft, Layers } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Progress } from '@/app/components/ui/progress';
 import { cn } from '@/app/components/ui/utils';
@@ -112,17 +112,38 @@ function UploadProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => vo
   );
 }
 
+function DeleteConfirmDialog({ open, onConfirm, onCancel, projectName }: { open: boolean, onConfirm: () => void, onCancel: () => void, projectName: string }) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>⚠️ Excluir Projeto</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
+          <p className="text-sm text-gray-600">
+            Deseja realmente excluir o projeto <strong>{projectName}</strong> e todos os dados vinculados? 
+            Esta ação não pode ser desfeita.
+          </p>
+        </div>
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={onCancel}>Cancelar</Button>
+          <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={onConfirm}>Excluir permanentemente</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function EngenhariaModule() {
   const { projects: projetos, selectedProject, setSelectedProject, loading: loadingProjects, refreshProjects } = useProject();
   const [cronograma, setCronograma] = useState<ScheduleItem[]>([]);
   const [orcamento, setOrcamento] = useState<BudgetItem[]>([]);
-  const [loadingDetails, setLoadingDetails] = useState(false);
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [deleteData, setDeleteData] = useState<{ id: string, name: string } | null>(null);
 
   const loadDetails = async () => {
     if (!selectedProject) return;
-    setLoadingDetails(true);
     try {
       const [sched, budg] = await Promise.all([
         getSchedule(selectedProject.id),
@@ -131,7 +152,7 @@ export function EngenhariaModule() {
       setCronograma(sched);
       setOrcamento(budg);
     } finally {
-      setLoadingDetails(false);
+      // Done
     }
   };
 
@@ -141,13 +162,17 @@ export function EngenhariaModule() {
     refreshProjects();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Excluir este documento?')) return;
-    await deleteProject(id);
-    refreshProjects();
+  const confirmDelete = async () => {
+    if (!deleteData) return;
+    try {
+      await deleteProject(deleteData.id);
+      setDeleteData(null);
+      await refreshProjects();
+    } catch (err: any) {
+      console.error('Error deleting project:', err);
+      alert(`Erro ao excluir projeto: ${err.message}`);
+    }
   };
-
-  const activeProject = selectedProject;
 
   return (
     <div className="space-y-6">
@@ -169,6 +194,14 @@ export function EngenhariaModule() {
 
           <NovoProjetoDialog onSuccess={handleCreated} open={isNewDialogOpen} setOpen={setIsNewDialogOpen} />
           <UploadProjetoDialog onSuccess={handleCreated} open={isUploadDialogOpen} setOpen={setIsUploadDialogOpen} />
+          {deleteData && (
+            <DeleteConfirmDialog 
+              open={!!deleteData} 
+              projectName={deleteData.name} 
+              onConfirm={confirmDelete} 
+              onCancel={() => setDeleteData(null)} 
+            />
+          )}
         </div>
       </div>
 
@@ -191,34 +224,64 @@ export function EngenhariaModule() {
         {/* GED Tab */}
         <TabsContent value="ged" className="space-y-4">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              {selectedProject ? `Projetos - ${selectedProject.name}` : 'GED - Documentos de Engenharia'}
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">
+                {selectedProject ? `Documentos - ${selectedProject.name}` : 'GED - Documentos de Engenharia'}
+              </h3>
+              {selectedProject && (
+                <Button variant="outline" size="sm" onClick={() => setSelectedProject(null)}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Voltar para Lista
+                </Button>
+              )}
+            </div>
+
             {loadingProjects ? (
               <p className="text-sm text-gray-500">Carregando...</p>
-            ) : projetos.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">Nenhum documento cadastrado. Clique em "Novo Projeto" para começar.</p>
-            ) : (
+            ) : !selectedProject ? (
               <div className="space-y-3">
+                <p className="text-sm text-gray-500 mb-4 italic">Selecione um projeto para ver seus documentos ou use a lista abaixo:</p>
                 {projetos.map((projeto: Project) => (
-                  <div key={projeto.id} className={cn("flex items-center justify-between p-4 border rounded-lg transition-colors", selectedProject?.id === projeto.id ? "bg-blue-50 border-blue-200" : "hover:bg-gray-50 cursor-pointer")} onClick={() => setSelectedProject(projeto)}>
+                  <div key={projeto.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => setSelectedProject(projeto)}>
                     <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-[#0A2E50]" />
+                      <FolderOpen className="w-5 h-5 text-blue-500" />
                       <div>
-                        <h4 className="font-medium">{projeto.name}</h4>
+                        <h4 className="font-medium text-gray-900">{projeto.name}</h4>
                         <p className="text-sm text-gray-500">Versão {projeto.version} • {new Date(projeto.date).toLocaleDateString('pt-BR')}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={projeto.status === 'aprovado' ? 'default' : 'outline'}>
-                        {projeto.status === 'aprovado' ? 'Aprovado' : projeto.status === 'revisao' ? 'Em Revisão' : 'Em Análise'}
+                        {projeto.status === 'aprovado' ? 'Aprovado' : projeto.status === 'revisao' ? 'Em Revisão' : 'Análise'}
                       </Badge>
-                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete(projeto.id); }}>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDeleteData({ id: projeto.id, name: projeto.name }); }}>
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>
                   </div>
                 ))}
+                {projetos.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-8">Nenhum projeto cadastrado.</p>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { name: 'Projetos e Plantas', count: 12, icon: Layers, color: 'text-blue-500' },
+                  { name: 'Alvarás e Licenças', count: 4, icon: FileText, color: 'text-orange-500' },
+                  { name: 'Contratos', count: 8, icon: FolderOpen, color: 'text-purple-500' },
+                  { name: 'Memorial Descritivo', count: 2, icon: FileText, color: 'text-green-500' },
+                ].map((folder, i) => (
+                  <div key={i} className="p-4 border rounded-xl hover:bg-gray-50 cursor-pointer transition-all group">
+                    <folder.icon className={cn("w-8 h-8 mb-3", folder.color)} />
+                    <h4 className="font-semibold text-gray-900 group-hover:text-blue-600">{folder.name}</h4>
+                    <p className="text-xs text-gray-500">{folder.count} arquivos</p>
+                  </div>
+                ))}
+                <div className="p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 cursor-pointer transition-all">
+                  <Plus className="w-6 h-6 mb-1" />
+                  <span className="text-xs font-medium">Nova Pasta</span>
+                </div>
               </div>
             )}
           </Card>

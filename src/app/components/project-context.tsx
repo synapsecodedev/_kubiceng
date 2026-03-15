@@ -21,13 +21,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       const data = await getProjects();
       setProjects(data);
       
-      // Se não houver projeto selecionado ou o atual não existe mais, tenta selecionar o primeiro
-      if (!selectedProject && data.length > 0) {
-        setSelectedProject(data[0]);
-      } else if (selectedProject) {
+      // Se o projeto selecionado não existe mais nos dados novos, limpa ele
+      if (selectedProject) {
         const stillExists = data.find(p => p.id === selectedProject.id);
-        if (!stillExists && data.length > 0) {
-          setSelectedProject(data[0]);
+        if (!stillExists) {
+          setSelectedProject(data.length > 0 ? data[0] : null);
         }
       }
     } catch (error) {

@@ -5,12 +5,12 @@ import { Package, FileText, Wrench, CheckCircle, Clock, BookOpen } from 'lucide-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { useEffect, useState } from 'react';
-import { getClientes, createCliente, getChamados, agendarChamado, Cliente, Chamado } from '@/services/api';
+import { getClientes, createCliente, getChamados, agendarChamado, Cliente, Chamado, Project } from '@/services/api';
 import { useProject } from './project-context';
 
-function NovoClienteDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
+function NovoClienteDialog({ onSuccess, selectedProject }: { onSuccess: () => void, selectedProject: Project | null }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nome: '', unidade: '', obra: '', progresso: '0', entregaPrevista: '' });
+  const [form, setForm] = useState({ nome: '', unidade: '', progresso: '0', entregaPrevista: '' });
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +18,12 @@ function NovoClienteDialog({ onSuccess, selectedProjectId }: { onSuccess: () => 
     try {
       await createCliente({ 
         ...form, 
+        obra: selectedProject?.name || '',
         progresso: parseInt(form.progresso),
-        projectId: selectedProjectId
+        projectId: selectedProject?.id
       });
       setOpen(false);
-      setForm({ nome: '', unidade: '', obra: '', progresso: '0', entregaPrevista: '' });
+      setForm({ nome: '', unidade: '', progresso: '0', entregaPrevista: '' });
       onSuccess();
     } finally { setLoading(false); }
   };
@@ -34,12 +35,16 @@ function NovoClienteDialog({ onSuccess, selectedProjectId }: { onSuccess: () => 
       <DialogContent>
         <DialogHeader><DialogTitle>Cadastrar Cliente</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {[['nome', 'Nome Completo'], ['unidade', 'Unidade (ex: Apto 301 - Torre A)'], ['obra', 'Obra / Empreendimento']].map(([key, label]: string[]) => (
+          {[['nome', 'Nome Completo'], ['unidade', 'Unidade (ex: Apto 301 - Torre A)']].map(([key, label]: string[]) => (
             <div key={key}>
               <label className="text-sm font-medium">{label}</label>
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
             </div>
           ))}
+          <div>
+            <label className="text-sm font-medium">Obra</label>
+            <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed" value={selectedProject?.name || ''} disabled />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-sm font-medium">Progresso (%)</label>
@@ -128,8 +133,17 @@ export function ComercialModule() {
           <h2 className="text-2xl font-bold text-gray-900">Comercial e Pós-Obra</h2>
           <p className="text-gray-600">Portal do cliente e assistência técnica</p>
         </div>
-        <NovoClienteDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
+        <NovoClienteDialog onSuccess={load} selectedProject={selectedProject} />
       </div>
+
+      {!selectedProject ? (
+        <Card className="p-12 text-center">
+          <Package className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900">Selecione uma Obra</h3>
+          <p className="text-gray-500">Por favor, selecione uma obra ativa no menu lateral para gerenciar o comercial e pós-obra.</p>
+        </Card>
+      ) : (
+        <>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4"><div className="text-sm text-gray-600">Unidades Cadastradas</div><div className="text-2xl font-bold text-gray-900 mt-1">{unidadesVendidas}</div></Card>
@@ -234,6 +248,8 @@ export function ComercialModule() {
           <Package className="w-16 h-16 opacity-20" />
         </div>
       </Card>
+        </>
+      )}
     </div>
   );
 }

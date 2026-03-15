@@ -166,7 +166,7 @@ function Footer({ onNavigate }: { onNavigate: (page: string) => void }) {
 // ============================================================
 const modules = [
   { icon: Ruler, title: 'Engenharia', desc: 'GED, cronograma e orçamento executivo', items: ['Versionamento de Projetos', 'Curva S — Físico vs Financeiro', 'Orçamento com Curva ABC'] },
-  { icon: ClipboardList, title: 'Execução', desc: 'Diário de obras e qualidade em campo', items: ['RDO Digital com fotos', 'Fichas de Verificação (FVS)', 'Almoxarifado e Estoque'] },
+  { icon: ClipboardList, title: 'Execução', desc: 'Diário de obras e qualidade em campo', items: ['RDO Digital com fotos', 'Fichas de Verificação (FVS)', 'Controle de Estoque e Almoxarifado'] },
   { icon: BarChart3, title: 'Financeiro', desc: 'Controle de custos e medições', items: ['Contas a Pagar', 'Aprovação de Medições', 'Fluxo de Caixa Real'] },
   { icon: Users, title: 'Pessoas & SST', desc: 'Efetivo, EPIs e segurança do trabalho', items: ['Controle de Ponto', 'Gestão de EPIs', 'Validades NR-35, NR-10'] },
   { icon: Package, title: 'Suprimentos', desc: 'Compras e ordens de fornecimento', items: ['Mapa de Cotação', 'Aprovação de Requisição', 'Ordens de Compra'] },

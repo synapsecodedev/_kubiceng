@@ -6,20 +6,24 @@ import { Users, Shield, Clock, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/app/components/ui/sheet';
 import { useEffect, useState } from 'react';
-import { getFuncionarios, createFuncionario, getEpis, distribuirEpi, getPonto, Funcionario, ItemEpi, RegistroPonto } from '@/services/api';
+import { getFuncionarios, createFuncionario, getEpis, distribuirEpi, getPonto, Funcionario, ItemEpi, RegistroPonto, Project } from '@/services/api';
 import { useProject } from './project-context';
 
-function NovoFuncionarioDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
+function NovoFuncionarioDialog({ onSuccess, selectedProject }: { onSuccess: () => void, selectedProject: Project | null }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nome: '', funcao: '', obra: '', tipo: 'proprio' as 'proprio' | 'terceiro', nr35: '', nr10: '' });
+  const [form, setForm] = useState({ nome: '', funcao: '', tipo: 'proprio' as 'proprio' | 'terceiro', nr35: '', nr10: '' });
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await createFuncionario({ ...form, projectId: selectedProjectId });
+      await createFuncionario({ 
+        ...form, 
+        obra: selectedProject?.name || '',
+        projectId: selectedProject?.id 
+      });
       setOpen(false);
-      setForm({ nome: '', funcao: '', obra: '', tipo: 'proprio', nr35: '', nr10: '' });
+      setForm({ nome: '', funcao: '', tipo: 'proprio', nr35: '', nr10: '' });
       onSuccess();
     } finally { setLoading(false); }
   };
@@ -31,12 +35,16 @@ function NovoFuncionarioDialog({ onSuccess, selectedProjectId }: { onSuccess: ()
       <DialogContent>
         <DialogHeader><DialogTitle>Cadastrar Funcionário</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {[['nome', 'Nome Completo'], ['funcao', 'Função'], ['obra', 'Obra Atual']].map(([key, label]: string[]) => (
+          {[['nome', 'Nome Completo'], ['funcao', 'Função']].map(([key, label]: string[]) => (
             <div key={key}>
               <label className="text-sm font-medium">{label}</label>
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
             </div>
           ))}
+          <div>
+            <label className="text-sm font-medium">Obra</label>
+            <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed" value={selectedProject?.name || ''} disabled />
+          </div>
           <div>
             <label className="text-sm font-medium">Tipo</label>
             <select className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value as any }))}>
@@ -131,8 +139,17 @@ export function PessoasModule() {
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Pessoas</h2>
           <p className="text-gray-600">RH, Segurança do Trabalho e controle de ponto</p>
         </div>
-        <NovoFuncionarioDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
+        <NovoFuncionarioDialog onSuccess={load} selectedProject={selectedProject} />
       </div>
+
+      {!selectedProject ? (
+        <Card className="p-12 text-center">
+          <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900">Selecione uma Obra</h3>
+          <p className="text-gray-500">Por favor, selecione uma obra ativa no menu lateral para gerenciar a equipe e SST.</p>
+        </Card>
+      ) : (
+        <>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
@@ -282,6 +299,8 @@ export function PessoasModule() {
           </Card>
         </TabsContent>
       </Tabs>
+        </>
+      )}
     </div>
   );
 }

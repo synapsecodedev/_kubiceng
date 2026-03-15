@@ -7,13 +7,13 @@ import { useEffect, useState } from 'react';
 import {
   getRequisicoes, createRequisicao, aprovarRequisicao,
   getOrdens, selecionarCotacao,
-  Requisicao, OrdemCompra
+  Requisicao, OrdemCompra, Project
 } from '@/services/api';
 import { useProject } from './project-context';
 
-function NovaRequisicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
+function NovaRequisicaoDialog({ onSuccess, selectedProject }: { onSuccess: () => void, selectedProject: Project | null }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ item: '', obra: '', solicitante: '', valor: '' });
+  const [form, setForm] = useState({ item: '', solicitante: '', valor: '' });
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,11 +21,12 @@ function NovaRequisicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () 
     try {
       await createRequisicao({ 
         ...form, 
+        obra: selectedProject?.name || 'Obra não selecionada',
         valor: parseFloat(form.valor),
-        projectId: selectedProjectId 
+        projectId: selectedProject?.id 
       });
       setOpen(false);
-      setForm({ item: '', obra: '', solicitante: '', valor: '' });
+      setForm({ item: '', solicitante: '', valor: '' });
       onSuccess();
     } finally { setLoading(false); }
   };
@@ -37,12 +38,16 @@ function NovaRequisicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () 
       <DialogContent>
         <DialogHeader><DialogTitle>Nova Requisição de Material</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {[['item', 'Item / Material'], ['obra', 'Obra'], ['solicitante', 'Solicitante']].map(([key, label]) => (
+          {[['item', 'Item / Material'], ['solicitante', 'Solicitante']].map(([key, label]) => (
             <div key={key}>
               <label className="text-sm font-medium">{label}</label>
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
             </div>
           ))}
+          <div>
+            <label className="text-sm font-medium">Obra</label>
+            <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed" value={selectedProject?.name || ''} disabled />
+          </div>
           <div>
             <label className="text-sm font-medium">Valor Estimado (R$)</label>
             <input type="number" step="0.01" className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={form.valor} onChange={e => setForm(f => ({ ...f, valor: e.target.value }))} required />
@@ -75,7 +80,15 @@ export function SuprimentosModule() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [selectedProject?.id]);
+  useEffect(() => { 
+    if (selectedProject?.id) {
+      load(); 
+    } else {
+      setRequisicoes([]);
+      setOrdens([]);
+      setLoading(false);
+    }
+  }, [selectedProject?.id]);
 
   const handleAprovar = async (id: string) => { await aprovarRequisicao(id); load(); };
   const handleSelecionar = async (cotacaoId: string) => { await selecionarCotacao(cotacaoId); load(); };
@@ -104,9 +117,17 @@ export function SuprimentosModule() {
           <h2 className="text-2xl font-bold text-gray-900">Suprimentos e Compras</h2>
           <p className="text-gray-600">Requisições, cotações e ordens de compra</p>
         </div>
-        <NovaRequisicaoDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
+        <NovaRequisicaoDialog onSuccess={load} selectedProject={selectedProject} />
       </div>
 
+      {!selectedProject ? (
+        <Card className="p-12 text-center">
+          <ShoppingCart className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900">Selecione uma Obra</h3>
+          <p className="text-gray-500">Por favor, selecione uma obra ativa no menu lateral para gerenciar os suprimentos.</p>
+        </Card>
+      ) : (
+        <>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4"><div className="text-sm text-gray-600">Requisições Pendentes</div><div className="text-2xl font-bold text-gray-900 mt-1">{pendentes}</div></Card>
         <Card className="p-4"><div className="text-sm text-gray-600">Em Cotação</div><div className="text-2xl font-bold text-blue-600 mt-1">{emCotacao}</div></Card>
@@ -192,6 +213,8 @@ export function SuprimentosModule() {
           </div>
         )}
       </Card>
+        </>
+      )}
     </div>
   );
 }

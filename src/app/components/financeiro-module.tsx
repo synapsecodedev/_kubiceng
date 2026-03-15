@@ -10,11 +10,11 @@ import {
   getContasPagar, pagarConta, createContaPagar,
   getMedicoes, createMedicao, aprovarMedicao,
   getFluxoCaixa,
-  ContaPagar, Medicao, FluxoCaixa
+  ContaPagar, Medicao, FluxoCaixa, Project
 } from '@/services/api';
 import { useProject } from './project-context';
 
-function NovaMedicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
+function NovaMedicaoDialog({ onSuccess, selectedProject }: { onSuccess: () => void, selectedProject: Project | null }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ empreiteiro: '', servico: '', periodo: '', executado: '', valor: '' });
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ function NovaMedicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => 
       await createMedicao({ 
         ...form, 
         valor: parseFloat(form.valor),
-        projectId: selectedProjectId 
+        projectId: selectedProject?.id 
       });
       setOpen(false);
       setForm({ empreiteiro: '', servico: '', periodo: '', executado: '', valor: '' });
@@ -46,6 +46,10 @@ function NovaMedicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => 
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
             </div>
           ))}
+          <div>
+            <label className="text-sm font-medium">Obra</label>
+            <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed" value={selectedProject?.name || ''} disabled />
+          </div>
           <div>
             <label className="text-sm font-medium">Valor Bruto (R$)</label>
             <input type="number" step="0.01" className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={form.valor} onChange={e => setForm(f => ({ ...f, valor: e.target.value }))} required />
@@ -104,9 +108,17 @@ export function FinanceiroModule() {
           <h2 className="text-2xl font-bold text-gray-900">Financeiro e Medições</h2>
           <p className="text-gray-600">Contas, medições de empreiteiros e fluxo de caixa</p>
         </div>
-        <NovaMedicaoDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
+        <NovaMedicaoDialog onSuccess={load} selectedProject={selectedProject} />
       </div>
 
+      {!selectedProject ? (
+        <Card className="p-12 text-center">
+          <DollarSign className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900">Selecione uma Obra</h3>
+          <p className="text-gray-500">Por favor, selecione uma obra ativa no menu lateral para gerenciar as medições e fluxo financeiro.</p>
+        </Card>
+      ) : (
+        <>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="flex items-center justify-between">
@@ -252,6 +264,8 @@ export function FinanceiroModule() {
           </Card>
         </TabsContent>
       </Tabs>
+      </>
+      )}
     </div>
   );
 }

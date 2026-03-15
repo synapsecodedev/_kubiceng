@@ -81,6 +81,7 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
               }}
               disabled={loadingProjects}
             >
+              <option value="" className="bg-[#0A2E50]">Selecione uma Obra...</option>
               {loadingProjects ? (
                 <option>Carregando...</option>
               ) : projects.length === 0 ? (

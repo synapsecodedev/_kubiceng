@@ -103,6 +103,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   const canAccessModule = (module: string) => {
     if (user?.role === 'superadmin') return true;
+    if (module === 'pessoas' || module === 'comercial') return true; // Always allow as per user request
     return subscription?.features[module] ?? false;
   };
 

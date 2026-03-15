@@ -2,15 +2,15 @@ import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { Camera, Users, Package as PackageIcon, FileCheck, CloudSun, CloudRain, Plus } from 'lucide-react';
+import { Camera, Users, Package as PackageIcon, FileCheck, CloudSun, CloudRain, Plus, Hammer, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { useEffect, useState } from 'react';
-import { getRdos, createRdo, getFvs, assinarFvs, getEstoque, entradaEstoque, saidaEstoque, Rdo, FichaVerificacao, ItemEstoque } from '@/services/api';
+import { getRdos, createRdo, getFvs, assinarFvs, getEstoque, entradaEstoque, saidaEstoque, Rdo, FichaVerificacao, ItemEstoque, Project } from '@/services/api';
 import { useProject } from './project-context';
 
-function NovoRdoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
+function NovoRdoDialog({ onSuccess, selectedProject }: { onSuccess: () => void, selectedProject: Project | null }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ obra: '', climaManha: 'sol', climaTarde: 'sol', efetivoProprio: 0, efetivoTerceiro: 0, atividades: '', fotos: 0 });
+  const [form, setForm] = useState({ climaManha: 'sol', climaTarde: 'sol', efetivoProprio: 0, efetivoTerceiro: 0, atividades: '', fotos: 0 });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,9 +19,10 @@ function NovoRdoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void
     try {
       await createRdo({ 
         ...form, 
+        obra: selectedProject?.name || 'Obra não selecionada',
         data: new Date().toISOString(),
         atividades: JSON.stringify(form.atividades.split('\n').filter(Boolean)),
-        projectId: selectedProjectId 
+        projectId: selectedProject?.id 
       });
       setOpen(false);
       onSuccess();
@@ -38,7 +39,7 @@ function NovoRdoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className="text-sm font-medium">Obra</label>
-            <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={form.obra} onChange={e => setForm(f => ({ ...f, obra: e.target.value }))} required />
+            <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed" value={selectedProject?.name || 'Selecione uma Obra...'} disabled />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -157,17 +158,28 @@ export function ExecucaoModule() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Execução e Canteiro</h2>
-          <p className="text-gray-600">Diário de obra, qualidade e controle de almoxarifado</p>
+          <p className="text-gray-600">Diário de obra, qualidade e controle de estoque e almoxarifado</p>
         </div>
-        <NovoRdoDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
+        <div className="flex gap-2">
+           {/* Botões contextuais poderiam ir aqui, mas o RDO é o principal */}
+           <NovoRdoDialog onSuccess={load} selectedProject={selectedProject} />
+        </div>
       </div>
 
-      <Tabs defaultValue="rdo" className="w-full">
-        <TabsList>
-          <TabsTrigger value="rdo"><FileCheck className="w-4 h-4 mr-2" />Diário de Obra (RDO)</TabsTrigger>
-          <TabsTrigger value="fvs"><FileCheck className="w-4 h-4 mr-2" />Qualidade (FVS)</TabsTrigger>
-          <TabsTrigger value="almoxarifado"><PackageIcon className="w-4 h-4 mr-2" />Almoxarifado</TabsTrigger>
-        </TabsList>
+      {!selectedProject ? (
+        <Card className="p-12 text-center">
+          <Hammer className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900">Selecione uma Obra</h3>
+          <p className="text-gray-500">Por favor, selecione uma obra ativa no menu lateral para gerenciar a execução e o estoque.</p>
+        </Card>
+      ) : (
+        <>
+        <Tabs defaultValue="rdo" className="w-full">
+          <TabsList>
+            <TabsTrigger value="rdo"><FileCheck className="w-4 h-4 mr-2" />Diário de Obra (RDO)</TabsTrigger>
+            <TabsTrigger value="fvs"><CheckCircle className="w-4 h-4 mr-2" />Qualidade (FVS)</TabsTrigger>
+            <TabsTrigger value="almoxarifado"><PackageIcon className="w-4 h-4 mr-2" />Controle de Estoque</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="rdo" className="space-y-4">
           {loading ? <p className="text-sm text-gray-500">Carregando...</p> : rdos.length === 0 ? (
@@ -305,7 +317,9 @@ export function ExecucaoModule() {
             )}
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+        </>
+      )}
     </div>
   );
 }

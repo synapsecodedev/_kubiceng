@@ -1,7 +1,8 @@
 import { Card } from '@/app/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useEffect, useState } from 'react';
-import { getProjects, getSchedule } from '@/services/api';
+import { getSchedule } from '@/services/api';
+import { useProject } from './project-context';
 
 interface CurvaPoint {
   mes: string;
@@ -46,24 +47,34 @@ function buildCurvaS(scheduleItems: { stage: string; startDate: string; endDate:
 export function CurvaSChart() {
   const [data, setData] = useState<CurvaPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const { projects, selectedProject } = useProject();
 
   useEffect(() => {
-    getProjects()
-      .then(async (projetos) => {
-        if (projetos.length === 0) {
+    async function loadData() {
+      setLoading(true);
+      try {
+        const projectToUse = selectedProject || projects[0];
+        if (!projectToUse) {
           setLoading(false);
           return;
         }
-        // Pegar cronograma do primeiro projeto ativo
-        const sched = await getSchedule(projetos[0].id);
-        if (sched.length > 0) {
-          const curva = buildCurvaS(sched);
-          if (curva.length > 0) setData(curva);
+
+        const sched = await getSchedule(projectToUse.id);
+        if (sched && sched.length > 0) {
+          setData(buildCurvaS(sched));
+        } else {
+          setData([]);
         }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+      } catch (error) {
+        console.error("Error loading Curva S data:", error);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [selectedProject, projects]);
 
   return (
     <Card className="p-6">
@@ -84,8 +95,8 @@ export function CurvaSChart() {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="mes" />
-            <YAxis label={{ value: '% Concluído', angle: -90, position: 'insideLeft' }} />
+            <XAxis dataKey="mes" {...({} as any)} />
+            <YAxis label={{ value: '% Concluído', angle: -90, position: 'insideLeft' }} {...({} as any)} />
             <Tooltip />
             <Legend />
             <Line type="monotone" dataKey="planejado" stroke="#94a3b8" strokeWidth={2} name="Planejado" strokeDasharray="5 5" />
