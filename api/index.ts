@@ -2,6 +2,19 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import fastify from "fastify";
 import cors from "@fastify/cors";
 
+// Static imports for Vercel bundling stability
+import { authRoutes } from "../backend/src/routes/auth.routes";
+import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
+import { dashboardRoutes } from "../backend/src/routes/dashboard.routes";
+import { financeiroRoutes } from "../backend/src/routes/financeiro.routes";
+import { suprimentosRoutes } from "../backend/src/routes/suprimentos.routes";
+import { execucaoRoutes } from "../backend/src/routes/execucao.routes";
+import { pessoasRoutes } from "../backend/src/routes/pessoas.routes";
+import { comercialRoutes } from "../backend/src/routes/comercial.routes";
+import { adminRoutes } from "../backend/src/routes/admin.routes";
+import { healthRoutes } from "../backend/src/routes/health.routes";
+import { profileRoutes } from "../backend/src/routes/profile.routes";
+
 const app = fastify({ 
   logger: true,
   pluginTimeout: 30000 
@@ -20,20 +33,10 @@ async function buildApp() {
       console.warn("DIAGNOSTIC: DATABASE_URL is missing from environment");
     }
 
-    // Dynamic imports to prevent boot-time crashes
-    const { authRoutes } = await import("../backend/src/routes/auth.routes") as any;
-    const { engenhariaRoutes } = await import("../backend/src/routes/engenharia.routes") as any;
-    const { dashboardRoutes } = await import("../backend/src/routes/dashboard.routes") as any;
-    const { financeiroRoutes } = await import("../backend/src/routes/financeiro.routes") as any;
-    const { suprimentosRoutes } = await import("../backend/src/routes/suprimentos.routes") as any;
-    const { execucaoRoutes } = await import("../backend/src/routes/execucao.routes") as any;
-    const { pessoasRoutes } = await import("../backend/src/routes/pessoas.routes") as any;
-    const { comercialRoutes } = await import("../backend/src/routes/comercial.routes") as any;
-    const { adminRoutes } = await import("../backend/src/routes/admin.routes") as any;
-    const { healthRoutes } = await import("../backend/src/routes/health.routes") as any;
-
+    // Register all routes
     await app.register(healthRoutes);
     await app.register(authRoutes);
+    await app.register(profileRoutes);
     await app.register(adminRoutes);
     await app.register(engenhariaRoutes);
     await app.register(execucaoRoutes);
@@ -80,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error: any) {
     console.error("HANDLER CRASH:", error);
     res.status(500).json({
-      error: "Vercel Worker Error (Fixed Path)",
+      error: "Vercel Worker Error (Static Imports)",
       message: error.message,
       stack: error.stack,
       diagnostics: {

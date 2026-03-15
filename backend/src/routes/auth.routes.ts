@@ -57,11 +57,11 @@ export async function authRoutes(app: FastifyInstance) {
           name: user.name,
           email: user.email,
           role: user.role,
-          avatarUrl: user.avatarUrl,
-          companyName: user.companyName,
-          companyCnpj: user.companyCnpj,
-          companyAddress: user.companyAddress,
-          companyLogoUrl: user.companyLogoUrl,
+          avatarUrl: (user as any).avatarUrl,
+          companyName: (user as any).companyName,
+          companyCnpj: (user as any).companyCnpj,
+          companyAddress: (user as any).companyAddress,
+          companyLogoUrl: (user as any).companyLogoUrl,
         },
         subscription: user.subscription
           ? {
@@ -171,11 +171,11 @@ export async function authRoutes(app: FastifyInstance) {
           name: result.user.name,
           email: result.user.email,
           role: result.user.role,
-          avatarUrl: result.user.avatarUrl,
-          companyName: result.user.companyName,
-          companyCnpj: result.user.companyCnpj,
-          companyAddress: result.user.companyAddress,
-          companyLogoUrl: result.user.companyLogoUrl,
+          avatarUrl: (result.user as any).avatarUrl,
+          companyName: (result.user as any).companyName,
+          companyCnpj: (result.user as any).companyCnpj,
+          companyAddress: (result.user as any).companyAddress,
+          companyLogoUrl: (result.user as any).companyLogoUrl,
         },
         subscription: {
           status: result.subscription.status,
@@ -199,6 +199,127 @@ export async function authRoutes(app: FastifyInstance) {
           error: String(err),
           stack: err instanceof Error ? err.stack : undefined
         });
+    }
+  });
+
+  // Sync (Google Login / OAuth)
+  app.post("/auth/sync", async (request, reply) => {
+    try {
+      const syncSchema = z.object({
+        email: z.string().email(),
+        name: z.string(),
+        avatarUrl: z.string().url().optional(),
+      });
+
+      const parseResult = syncSchema.safeParse(request.body);
+
+      if (!parseResult.success) {
+        return reply.status(400).send({
+          message: "Dados inválidos",
+          details: parseResult.error.flatten(),
+        });
+      }
+
+      const { email, name, avatarUrl } = parseResult.data;
+
+      // Busca user ou cria um novo se não existir
+      let user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          subscription: {
+            include: {
+              plan: {
+                include: {
+                  features: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        // Se não existir, cria com plano pro (trial)
+        const plan = await prisma.plan.findUnique({ where: { slug: "pro" } });
+        if (!plan) {
+          return reply.status(404).send({ message: "Plano padrão não encontrado" });
+        }
+
+        user = await prisma.$transaction(async (tx) => {
+          const newUser = await tx.user.create({
+            data: {
+              email,
+              name,
+              avatarUrl,
+              passwordHash: "", // Login social não usa senha local
+              role: "user",
+            } as any,
+          });
+
+          const trialDays = 7;
+          const trialEnd = new Date();
+          trialEnd.setDate(trialEnd.getDate() + trialDays);
+
+          await tx.subscription.create({
+            data: {
+              userId: newUser.id,
+              planId: plan.id,
+              status: "trial",
+              trialEnd,
+            },
+          });
+
+          return tx.user.findUnique({
+            where: { id: newUser.id },
+            include: {
+              subscription: {
+                include: {
+                  plan: {
+                    include: {
+                      features: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+        });
+      }
+
+      if (!user) {
+        return reply.status(500).send({ message: "Falha ao sincronizar usuário" });
+      }
+
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatarUrl: (user as any).avatarUrl,
+          companyName: (user as any).companyName,
+          companyCnpj: (user as any).companyCnpj,
+          companyAddress: (user as any).companyAddress,
+          companyLogoUrl: (user as any).companyLogoUrl,
+        },
+        subscription: user.subscription
+          ? {
+               status: user.subscription.status,
+               plan: user.subscription.plan.name,
+               slug: user.subscription.plan.slug,
+               features: user.subscription.plan.features.reduce(
+                 (acc, f) => {
+                   acc[f.module] = f.enabled;
+                   return acc;
+                 },
+                 {} as Record<string, boolean>,
+               ),
+             }
+          : null,
+      };
+    } catch (err) {
+      console.error(err);
+      return reply.status(500).send({ message: "Erro na sincronização", error: String(err) });
     }
   });
 
@@ -234,11 +355,11 @@ export async function authRoutes(app: FastifyInstance) {
           name: user.name,
           email: user.email,
           role: user.role,
-          avatarUrl: user.avatarUrl,
-          companyName: user.companyName,
-          companyCnpj: user.companyCnpj,
-          companyAddress: user.companyAddress,
-          companyLogoUrl: user.companyLogoUrl,
+          avatarUrl: (user as any).avatarUrl,
+          companyName: (user as any).companyName,
+          companyCnpj: (user as any).companyCnpj,
+          companyAddress: (user as any).companyAddress,
+          companyLogoUrl: (user as any).companyLogoUrl,
         },
         subscription: user.subscription
           ? {

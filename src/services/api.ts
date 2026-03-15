@@ -313,6 +313,12 @@ export const register = (data: {
   planSlug: string;
 }) => api.post<LoginResponse>('/auth/register', data).then(r => r.data);
 
+export const syncUser = (data: {
+  email: string;
+  name: string;
+  avatarUrl?: string;
+}) => api.post<LoginResponse>('/auth/sync', data).then(r => r.data);
+
 // ===== ADMIN =====
 
 export interface AdminDashboardData {

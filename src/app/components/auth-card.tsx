@@ -6,6 +6,9 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { cn } from '@/app/components/ui/utils';
 import logo from '../../assets/kubiceng-logo.png';
+import { FaGoogle } from 'react-icons/fa';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface AuthCardProps {
   onLogin: (data: any) => Promise<void>;
@@ -29,6 +32,20 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
   const [docType, setDocType] = useState<'cpf' | 'cnpj'>('cpf');
 
   const handleToggle = () => setIsFlipped(!isFlipped);
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error('Erro ao iniciar login com Google: ' + error.message);
+    }
+  };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +126,22 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
                 disabled={isLoading}
               >
                 {isLoading ? "Entrando..." : "ENTRAR NO PAINEL"}
+              </Button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200" /></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Ou continue com</span></div>
+              </div>
+
+              <Button 
+                type="button"
+                variant="outline"
+                className="w-full h-12 border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl flex items-center justify-center gap-3 transition-all"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+              >
+                <FaGoogle className="text-red-500 w-5 h-5" />
+                <span className="font-semibold">Entrar com Google</span>
               </Button>
             </form>
           </div>
@@ -246,6 +279,22 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
                   disabled={isLoading}
                 >
                   {isLoading ? "Criando..." : "CADASTRAR E COMEÇAR"}
+                </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100" /></div>
+                  <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-white px-2 text-gray-300">Ou use sua rede social</span></div>
+                </div>
+
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="w-full h-11 border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl flex items-center justify-center gap-2 transition-all"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoading}
+                >
+                  <FaGoogle className="text-red-500 w-4 h-4" />
+                  <span className="font-semibold text-sm">Criar com Google</span>
                 </Button>
               </div>
             </form>

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { syncUser } from '@/services/api';
 
 export type UserRole = 'user' | 'admin' | 'superadmin';
 
@@ -53,7 +55,36 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('kubic_subscription');
       }
     }
+
+    // Listener para o Supabase Auth (OAuth Google)
+    const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          // Se estamos logados no Supabase mas não no nosso context, sincroniza
+          const currentSavedUser = localStorage.getItem('kubic_user');
+          if (!currentSavedUser || currentSavedUser === 'undefined') {
+            try {
+              const res = await syncUser({
+                email: session.user.email!,
+                name: (session.user.user_metadata as any).full_name || session.user.email!.split('@')[0],
+                avatarUrl: (session.user.user_metadata as any).avatar_url,
+              });
+              login(res.user, res.subscription!);
+              // Limpa a URL de fragmentos de auth para ficar limpo
+              window.history.replaceState({}, document.title, window.location.pathname);
+            } catch (err) {
+              console.error('Erro na sincronização OAuth:', err);
+            }
+          }
+        }
+      }
+    );
+
     setIsLoading(false);
+
+    return () => {
+      authListener.unsubscribe();
+    };
   }, []);
 
   const login = (userData: User, subData: Subscription) => {
