@@ -12,6 +12,7 @@ import { adminRoutes } from "./routes/admin.routes";
 import { healthRoutes } from "./routes/health.routes";
 import { profileRoutes } from "./routes/profile.routes";
 import multipart from "@fastify/multipart";
+import { prisma } from "./lib/prisma";
 
 const app = fastify();
 
@@ -31,6 +32,19 @@ app.register(comercialRoutes);
 app.register(dashboardRoutes);
 app.register(profileRoutes);
 app.register(multipart);
+
+app.get("/test-db", async (request, reply) => {
+  try {
+    const result = await (prisma as any).$queryRaw`SELECT 1 as connected`;
+    return { success: true, result };
+  } catch (err) {
+    return reply.status(500).send({ 
+      success: false, 
+      error: String(err),
+      stack: err instanceof Error ? err.stack : undefined
+    });
+  }
+});
 
 const port = Number(process.env.PORT) || 3333;
 

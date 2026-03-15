@@ -19,15 +19,16 @@ export const getPrisma = () => {
       }
       
       console.log('Prisma Lazy Init: Applying Supabase Pooler overrides');
+      const maskedUrl = url.replace(/:([^:@]+)@/, ':****@');
+      console.log(`Prisma final URL: ${maskedUrl}`);
       
-      // We can't easily modify process.env and expect Prisma to pick it up if it already read it,
-      // but passing it in the constructor works.
       prismaInstance = new PrismaClient({
         datasources: {
           db: { url }
         }
       });
     } else {
+      console.log('Prisma Lazy Init: Using default configuration');
       prismaInstance = new PrismaClient();
     }
   }
