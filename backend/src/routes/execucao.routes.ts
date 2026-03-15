@@ -7,7 +7,7 @@ export async function execucaoRoutes(app: FastifyInstance) {
   app.get('/rdos', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     return prisma.rdo.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: (projectId ? { projectId } : {}) as any,
       orderBy: { data: 'desc' } 
     })
   })
@@ -52,7 +52,7 @@ export async function execucaoRoutes(app: FastifyInstance) {
   app.get('/fvs', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     return prisma.fichaVerificacao.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: (projectId ? { projectId } : {}) as any,
       orderBy: { data: 'desc' } 
     })
   })

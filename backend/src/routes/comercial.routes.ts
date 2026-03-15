@@ -7,7 +7,7 @@ export async function comercialRoutes(app: FastifyInstance) {
   app.get('/clientes', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     return prisma.cliente.findMany({
-      where: projectId ? { projectId } : {},
+      where: (projectId ? { projectId } : {}) as any,
       include: { chamados: true },
       orderBy: { nome: 'asc' },
     })

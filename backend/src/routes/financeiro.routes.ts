@@ -7,7 +7,7 @@ export async function financeiroRoutes(app: FastifyInstance) {
   app.get('/contas-pagar', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     return prisma.contaPagar.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: (projectId ? { projectId } : {}) as any,
       orderBy: { vencimento: 'asc' } 
     })
   })

@@ -7,7 +7,7 @@ export async function pessoasRoutes(app: FastifyInstance) {
   app.get('/funcionarios', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     return prisma.funcionario.findMany({ 
-      where: projectId ? { projectId } : {},
+      where: (projectId ? { projectId } : {}) as any,
       orderBy: { nome: 'asc' } 
     })
   })

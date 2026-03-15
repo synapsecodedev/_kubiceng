@@ -6,6 +6,8 @@ export async function dashboardRoutes(app: FastifyInstance) {
   app.get('/dashboard/kpis', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     const filter = projectId ? { projectId } : {}
+    const projectFilter = projectId ? { id: projectId } : {}
+
     const [
       totalProjetos,
       alertasCriticos,
@@ -14,7 +16,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
       saldoCaixa,
       funcionariosAtivos,
     ] = await Promise.all([
-      prisma.project.count({ where: filter }),
+      prisma.project.count({ where: projectFilter }),
       // Alertas críticos: contas vencidas + estoque crítico + treinamentos vencidos
       prisma.contaPagar.count({ where: { status: 'vencido', ...filter } }),
       prisma.requisicao.count({ where: { status: 'pendente_aprovacao', ...filter } }),
@@ -24,7 +26,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
     ])
 
     // Estoque crítico
-    const estoqueItems = await prisma.itemEstoque.findMany({ where: filter })
+    const estoqueItems = await prisma.itemEstoque.findMany({ where: filter as any })
     const estoqueCritico = estoqueItems.filter(e => e.qtdAtual < e.qtdMinima).length
 
     const alertasTotal = alertasCriticos + estoqueCritico
@@ -70,7 +72,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
     }
 
     // Estoque crítico
-    const estoqueItems = await prisma.itemEstoque.findMany({ where: filter })
+    const estoqueItems = await prisma.itemEstoque.findMany({ where: filter as any })
     for (const e of estoqueItems.filter(x => x.qtdAtual < x.qtdMinima)) {
       alertas.push({
         id: `est-${e.id}`,

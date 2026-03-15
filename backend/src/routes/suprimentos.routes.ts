@@ -7,7 +7,7 @@ export async function suprimentosRoutes(app: FastifyInstance) {
   app.get('/requisicoes', async (request) => {
     const { projectId } = request.query as { projectId?: string }
     return prisma.requisicao.findMany({
-      where: projectId ? { projectId } : {},
+      where: (projectId ? { projectId } : {}) as any,
       include: { cotacoes: true },
       orderBy: { createdAt: 'desc' },
     })
