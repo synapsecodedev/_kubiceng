@@ -2,74 +2,87 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+import bcrypt from "bcryptjs";
 
-// Core routes only for stability test
-import { authRoutes } from "../backend/src/routes/auth.routes";
-import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
-import { healthRoutes } from "../backend/src/routes/health.routes";
-import { profileRoutes } from "../backend/src/routes/profile.routes";
-import { adminRoutes } from "../backend/src/routes/admin.routes";
-import { prisma } from "../backend/src/lib/prisma";
+// Direct Prisma Instance for the handler
+const prisma = new PrismaClient();
 
-console.log("LAMBDA_INIT: Module Load Started");
+console.log("LAMBDA_INIT: Self-Contained Handler Loading");
 
-const app = fastify({ 
-  logger: true,
-  pluginTimeout: 10000 
-});
+const app = fastify({ logger: true });
 
 let isConfigured = false;
-
-// Global process listeners for hidden crashes
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("CRITICAL: Unhandled Rejection at:", promise, "reason:", reason);
-});
-
-process.on("uncaughtException", (err) => {
-  console.error("CRITICAL: Uncaught Exception:", err);
-});
 
 async function configureApp() {
   if (isConfigured) return;
   
-  console.log("LAMBDA_INIT: Configuring plugins...");
   await app.register(cors, { origin: "*" });
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
 
-  // Minimal test endpoints
+  // Minimal Diagnostic
   app.get("/test-ping", async () => {
-    return { status: "alive", core_only: true, time: new Date().toISOString() };
+    return { status: "alive", type: "self-contained", version: "1.2.0", time: new Date().toISOString() };
   });
 
-  app.get("/test-env", async () => {
-    return { 
-      keys: Object.keys(process.env).filter(k => k.includes("DATABASE") || k.includes("SUPABASE")),
-      node: process.version
-    };
+  // Self-contained Health
+  app.get("/health", async (request, reply) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return { status: "ok", database: "connected" };
+    } catch (error: any) {
+      return reply.status(500).send({ status: "error", message: error.message });
+    }
   });
 
-  app.setErrorHandler((error: any, request, reply) => {
-    console.error("FASTIFY ERROR:", error);
-    reply.status(500).send({ error: "Internal Error", message: error.message });
+  // Self-contained Login (minimal version)
+  app.post("/auth/login", async (request, reply) => {
+    try {
+      const loginSchema = z.object({
+        email: z.string().email(),
+        password: z.string(),
+      });
+
+      const parseResult = loginSchema.safeParse(request.body);
+      if (!parseResult.success) {
+        return reply.status(400).send({ message: "Dados inválidos", details: parseResult.error.flatten() });
+      }
+
+      const { email, password } = parseResult.data;
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: { subscription: true }
+      });
+
+      if (!user) {
+        return reply.status(401).send({ message: "Credenciais inválidas" });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isPasswordValid) {
+        return reply.status(401).send({ message: "Credenciais inválidas" });
+      }
+
+      // Return user data (matching frontend expectations as much as possible)
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          subscription: user.subscription
+        }
+      };
+    } catch (error: any) {
+      console.error("LOGIN ERROR:", error);
+      return reply.status(500).send({ message: "Erro interno no login", error: error.message });
+    }
   });
 
-  try {
-    console.log("LAMBDA_INIT: Registering Core Routes...");
-    await app.register(healthRoutes as any);
-    await app.register(authRoutes as any);
-    await app.register(profileRoutes as any);
-    await app.register(adminRoutes as any);
-    await app.register(engenhariaRoutes as any);
-
-    console.log("LAMBDA_INIT: Waiting for app.ready()...");
-    await app.ready();
-    
-    isConfigured = true;
-    console.log("LAMBDA_INIT: Boot Success");
-  } catch (err: any) {
-    console.error("LAMBDA_INIT: Boot Failed", err);
-    throw err;
-  }
+  await app.ready();
+  isConfigured = true;
+  console.log("LAMBDA_INIT: Self-Contained Boot Success");
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -95,7 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error: any) {
     console.error("HANDLER FATAL:", error);
     res.status(500).json({
-      error: "Fatal Crash",
+      error: "Fatal Crash Self-Contained",
       message: error.message,
       stack: error.stack
     });

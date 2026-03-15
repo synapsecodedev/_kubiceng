@@ -9,7 +9,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "postinstall": "prisma generate --schema=backend/prisma/schema.prisma"
+    "postinstall": "prisma generate --schema=backend/prisma/schema.prisma",
+    "build:backend": "./render-build.sh",
+    "start": "npm start --prefix backend"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

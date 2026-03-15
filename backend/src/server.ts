@@ -32,6 +32,11 @@ app.register(dashboardRoutes);
 app.register(profileRoutes);
 app.register(multipart);
 
-app.listen({ port: 3333 }).then(() => {
-  console.log("HTTP Server running on http://localhost:3333");
+const port = Number(process.env.PORT) || 3333;
+
+app.listen({ 
+  port,
+  host: "0.0.0.0" 
+}).then(() => {
+  console.log(`HTTP Server running on port ${port}`);
 });
