@@ -24,6 +24,10 @@ function NovoProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => void
       setOpen(false);
       setForm({ name: '', version: '1.0', status: 'revisao' });
       onSuccess();
+    } catch (err: any) {
+      console.error('Error creating project:', err);
+      const msg = err.response?.data?.message || err.message || 'Erro deconhecido';
+      alert(`Erro ao criar projeto: ${msg}`);
     } finally {
       setLoading(false);
     }

@@ -1,77 +1,76 @@
-// api/index.ts — Maximum Stability Vercel Handler
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import Fastify from "fastify";
+import fastify from "fastify";
 import cors from "@fastify/cors";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import { z } from "zod";
 
-// Runtime port override for Supabase Pooler
-let dbUrl = process.env.DATABASE_URL || "";
-if (dbUrl.includes(':5432')) {
-  dbUrl = dbUrl.replace(':5432', ':6543');
-}
-if (!dbUrl.includes('pgbouncer=true')) {
-  dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'pgbouncer=true';
-}
-
-// Global Prisma instance - Inlined to avoid bundling issues
-const prisma = new PrismaClient({
-  datasources: {
-    db: { url: dbUrl }
-  }
-});
-
-const app = Fastify({ 
-  logger: false,
+const app = fastify({ 
+  logger: true,
   pluginTimeout: 30000 
 });
 
-import { authRoutes } from "../backend/src/routes/auth.routes";
-import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
-import { dashboardRoutes } from "../backend/src/routes/dashboard.routes";
-import { financeiroRoutes } from "../backend/src/routes/financeiro.routes";
-import { suprimentosRoutes } from "../backend/src/routes/suprimentos.routes";
-import { execucaoRoutes } from "../backend/src/routes/execucao.routes";
-import { pessoasRoutes } from "../backend/src/routes/pessoas.routes";
-import { comercialRoutes } from "../backend/src/routes/comercial.routes";
-import { adminRoutes } from "../backend/src/routes/admin.routes";
-import { healthRoutes } from "../backend/src/routes/health.routes";
-
 let isReady = false;
+
 async function buildApp() {
   if (isReady) return;
+  
   await app.register(cors, { origin: "*" });
 
-  // Register all routes from the backend
-  await app.register(healthRoutes);
-  await app.register(authRoutes);
-  await app.register(adminRoutes);
-  await app.register(engenhariaRoutes);
-  await app.register(execucaoRoutes);
-  await app.register(financeiroRoutes);
-  await app.register(pessoasRoutes);
-  await app.register(suprimentosRoutes);
-  await app.register(comercialRoutes);
-  await app.register(dashboardRoutes);
+  try {
+    // Environmental sanity check
+    if (!process.env.DATABASE_URL) {
+      console.warn("DIAGNOSTIC: DATABASE_URL is missing from environment");
+    }
 
-  await app.ready();
-  isReady = true;
+    // Dynamic imports to prevent boot-time crashes
+    const { authRoutes } = await import("../backend/src/routes/auth.routes") as any;
+    const { engenhariaRoutes } = await import("../backend/src/routes/engenharia.routes") as any;
+    const { dashboardRoutes } = await import("../backend/src/routes/dashboard.routes") as any;
+    const { financeiroRoutes } = await import("../backend/src/routes/financeiro.routes") as any;
+    const { suprimentosRoutes } = await import("../backend/src/routes/suprimentos.routes") as any;
+    const { execucaoRoutes } = await import("../backend/src/routes/execucao.routes") as any;
+    const { pessoasRoutes } = await import("../backend/src/routes/pessoas.routes") as any;
+    const { comercialRoutes } = await import("../backend/src/routes/comercial.routes") as any;
+    const { adminRoutes } = await import("../backend/src/routes/admin.routes") as any;
+    const { healthRoutes } = await import("../backend/src/routes/health.routes") as any;
+
+    await app.register(healthRoutes);
+    await app.register(authRoutes);
+    await app.register(adminRoutes);
+    await app.register(engenhariaRoutes);
+    await app.register(execucaoRoutes);
+    await app.register(financeiroRoutes);
+    await app.register(pessoasRoutes);
+    await app.register(suprimentosRoutes);
+    await app.register(comercialRoutes);
+    await app.register(dashboardRoutes);
+
+    await app.ready();
+    isReady = true;
+  } catch (err: any) {
+    console.error("DIAGNOSTIC: Route Registration Failed", err);
+    throw err;
+  }
 }
+
+// Set global error handler
+app.setErrorHandler((error: any, request, reply) => {
+  console.error("FASTIFY ERROR:", error);
+  reply.status(500).send({
+    error: "Fastify Error",
+    message: error.message,
+    url: request.url,
+  });
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await buildApp();
     const url = req.url?.replace(/^\/api/, "") || "/";
     
-    // Safety check for empty body
-    const payload = req.body || undefined;
-
     const response = await app.inject({
       method: req.method as any,
       url,
       headers: req.headers as any,
-      payload,
+      payload: req.body || undefined,
     });
 
     res.status(response.statusCode);
@@ -79,11 +78,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (contentType) res.setHeader("content-type", contentType);
     res.send(response.body);
   } catch (error: any) {
-    console.error("CRITICAL ERROR:", error);
+    console.error("HANDLER CRASH:", error);
     res.status(500).json({
-      error: "Vercel Boot Error",
+      error: "Vercel Worker Error (Fixed Path)",
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
+      diagnostics: {
+        isReady,
+        nodeEnv: process.env.NODE_ENV,
+        hasDbUrl: !!process.env.DATABASE_URL
+      }
     });
   }
 }
