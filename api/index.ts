@@ -36,10 +36,15 @@ async function buildApp() {
 
   try {
     // Register all routes
+    console.log("LAMBDA_INIT: Registering healthRoutes...");
     await app.register(healthRoutes);
+    console.log("LAMBDA_INIT: Registering authRoutes...");
     await app.register(authRoutes);
+    console.log("LAMBDA_INIT: Registering profileRoutes...");
     await app.register(profileRoutes);
+    console.log("LAMBDA_INIT: Registering adminRoutes...");
     await app.register(adminRoutes);
+    console.log("LAMBDA_INIT: Registering other business routes...");
     await app.register(engenhariaRoutes);
     await app.register(execucaoRoutes);
     await app.register(financeiroRoutes);
@@ -48,11 +53,13 @@ async function buildApp() {
     await app.register(comercialRoutes);
     await app.register(dashboardRoutes);
 
+    console.log("LAMBDA_INIT: Calling app.ready()...");
     await app.ready();
     isReady = true;
     console.log("LAMBDA_INIT: App is Ready");
   } catch (err: any) {
     console.error("DIAGNOSTIC: Route Registration Failed", err);
+    // Attach current registration stage if helpful
     throw err;
   }
 }
@@ -88,7 +95,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).json({
       error: "Vercel Worker Error",
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
+      diag: "Crash in unified handler registration or execution"
     });
   }
 }
