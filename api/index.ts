@@ -62,6 +62,7 @@ async function configureApp() {
     });
   });
 
+  const registered: string[] = [];
   try {
     console.log("LAMBDA_INIT: Registering Routes...");
     
@@ -69,11 +70,16 @@ async function configureApp() {
       console.log(`LAMBDA_INIT: Registering ${name}...`);
       try {
         await app.register(routeFn as any);
+        registered.push(name);
       } catch (e: any) {
         console.error(`LAMBDA_INIT: Failed to register ${name}`, e);
         throw new Error(`Registration Failure: ${name} -> ${e.message}`);
       }
     };
+
+    app.get("/test-ping", async () => {
+      return { status: "alive", time: new Date().toISOString(), registered, bundled: true };
+    });
 
     await safeRegister("healthRoutes", healthRoutes);
     await safeRegister("authRoutes", authRoutes);
