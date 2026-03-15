@@ -1,7 +1,7 @@
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { FileText, Upload, FolderOpen, Calendar, DollarSign, Trash2 } from 'lucide-react';
+import { FileText, Upload, FolderOpen, Calendar, DollarSign, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Progress } from '@/app/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
@@ -33,21 +33,21 @@ function NovoProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => void
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo Documento / Projeto</DialogTitle>
+          <DialogTitle>🎉 Criar Novo Projeto</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Nome do Documento</label>
+            <label className="text-sm font-medium">Nome da Obra/Projeto</label>
             <input
               className="w-full mt-1 border rounded-md px-3 py-2 text-sm"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="Ex: Projeto Arquitetônico - Torre A"
+              placeholder="Ex: Edifício Horizonte"
               required
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Versão</label>
+            <label className="text-sm font-medium">Versão Inicial</label>
             <input
               className="w-full mt-1 border rounded-md px-3 py-2 text-sm"
               value={form.version}
@@ -56,22 +56,48 @@ function NovoProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => void
               required
             />
           </div>
-          <div>
-            <label className="text-sm font-medium">Status</label>
-            <select
-              className="w-full mt-1 border rounded-md px-3 py-2 text-sm"
-              value={form.status}
-              onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-            >
-              <option value="revisao">Em Revisão</option>
-              <option value="aprovado">Aprovado</option>
-              <option value="em_analise">Em Análise</option>
-            </select>
-          </div>
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button type="submit" className="bg-[#0A2E50]" disabled={loading}>
-              {loading ? 'Salvando...' : 'Salvar'}
+              {loading ? 'Criando...' : 'Criar Projeto'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UploadProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => void, open: boolean, setOpen: (open: boolean) => void }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    // Simulação de upload para projeto existente
+    setTimeout(() => {
+      setOpen(false);
+      onSuccess();
+      setLoading(false);
+    }, 1500);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>📁 Upload de Projeto Existente</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleUpload} className="space-y-4">
+          <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer">
+            <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-600">Arraste arquivos ou clique para selecionar</p>
+            <p className="text-xs text-gray-400 mt-1">Suporta PDF, DWG, Excel (Gantt)</p>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button type="submit" className="bg-[#4A9EFF]" disabled={loading}>
+              {loading ? 'Subindo...' : 'Fazer Upload'}
             </Button>
           </div>
         </form>
@@ -86,14 +112,14 @@ export function EngenhariaModule() {
   const [cronograma, setCronograma] = useState<ScheduleItem[]>([]);
   const [orcamento, setOrcamento] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const loadProjetos = async () => {
     try {
       const data = await getProjects();
       setProjetos(data);
       if (data.length > 0) {
-        // Garantir que o index ativo ainda é válido
         const index = activeProjectIndex < data.length ? activeProjectIndex : 0;
         const [sched, budg] = await Promise.all([
           getSchedule(data[index].id),
@@ -138,11 +164,17 @@ export function EngenhariaModule() {
               ))}
             </select>
           )}
-          <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+          <Button variant="outline" onClick={() => setIsUploadDialogOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Upload Projeto
           </Button>
-          <NovoProjetoDialog onSuccess={loadProjetos} open={isDialogOpen} setOpen={setIsDialogOpen} />
+          <Button className="bg-[#0A2E50]" onClick={() => setIsNewDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Projeto
+          </Button>
+
+          <NovoProjetoDialog onSuccess={loadProjetos} open={isNewDialogOpen} setOpen={setIsNewDialogOpen} />
+          <UploadProjetoDialog onSuccess={loadProjetos} open={isUploadDialogOpen} setOpen={setIsUploadDialogOpen} />
         </div>
       </div>
 
