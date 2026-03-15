@@ -5,9 +5,11 @@ import { ObrasMap } from '@/app/components/obras-map';
 import { Alertas } from '@/app/components/alertas';
 import { useEffect, useState } from 'react';
 import { getDashboardKpis, DashboardKpis } from '@/services/api';
+import { usePlan } from './plan-context';
 
 export function DashboardModule() {
   const [kpis, setKpis] = useState<DashboardKpis | null>(null);
+  const { user } = usePlan();
 
   useEffect(() => {
     getDashboardKpis().then(setKpis).catch(() => {});
@@ -23,8 +25,10 @@ export function DashboardModule() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard - Cockpit do Engenheiro</h2>
-        <p className="text-gray-600">Visão geral de todas as obras e indicadores em tempo real</p>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Olá, {user?.name?.split(' ')[0] || 'Engenheiro'}! 👋
+        </h2>
+        <p className="text-gray-600">Bem-vindo de volta ao cockpit do KubicEng</p>
       </div>
 
       {/* KPIs */}

@@ -21,7 +21,6 @@ function buildCurvaS(scheduleItems: { stage: string; startDate: string; endDate:
 
   scheduleItems.forEach((item) => {
     const start = new Date(item.startDate);
-    const end = new Date(item.endDate);
     const mes = `${mesesPt[start.getMonth()]}/${String(start.getFullYear()).slice(2)}`;
     if (!pontos[mes]) pontos[mes] = { planejadoCount: 0, realizadoSum: 0 };
     pontos[mes].planejadoCount += 1;
@@ -44,23 +43,17 @@ function buildCurvaS(scheduleItems: { stage: string; startDate: string; endDate:
   });
 }
 
-const FALLBACK_DATA = [
-  { mes: 'Jan', planejado: 5, realizado: 4 },
-  { mes: 'Fev', planejado: 12, realizado: 11 },
-  { mes: 'Mar', planejado: 22, realizado: 20 },
-  { mes: 'Abr', planejado: 35, realizado: 32 },
-  { mes: 'Mai', planejado: 48, realizado: 45 },
-  { mes: 'Jun', planejado: 62, realizado: 58 },
-  { mes: 'Jul', planejado: 75, realizado: 68 },
-];
-
 export function CurvaSChart() {
-  const [data, setData] = useState<CurvaPoint[]>(FALLBACK_DATA);
+  const [data, setData] = useState<CurvaPoint[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProjects()
       .then(async (projetos) => {
-        if (projetos.length === 0) return;
+        if (projetos.length === 0) {
+          setLoading(false);
+          return;
+        }
         // Pegar cronograma do primeiro projeto ativo
         const sched = await getSchedule(projetos[0].id);
         if (sched.length > 0) {
@@ -68,7 +61,8 @@ export function CurvaSChart() {
           if (curva.length > 0) setData(curva);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -77,17 +71,28 @@ export function CurvaSChart() {
         <h3 className="text-lg font-semibold text-gray-900">Curva S - Avanço Físico vs. Financeiro</h3>
         <p className="text-sm text-gray-500">Comparativo de progresso planejado x realizado</p>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="mes" />
-          <YAxis label={{ value: '% Concluído', angle: -90, position: 'insideLeft' }} />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="planejado" stroke="#94a3b8" strokeWidth={2} name="Planejado" strokeDasharray="5 5" />
-          <Line type="monotone" dataKey="realizado" stroke="#0A2E50" strokeWidth={3} name="Físico Real" />
-        </LineChart>
-      </ResponsiveContainer>
+      
+      {loading ? (
+        <div className="h-[300px] flex items-center justify-center text-sm text-gray-500">
+          Carregando dados do cronograma...
+        </div>
+      ) : data.length === 0 ? (
+        <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg text-sm text-gray-500">
+          Sem dados de cronograma disponíveis para gerar a Curva S.
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="mes" />
+            <YAxis label={{ value: '% Concluído', angle: -90, position: 'insideLeft' }} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="planejado" stroke="#94a3b8" strokeWidth={2} name="Planejado" strokeDasharray="5 5" />
+            <Line type="monotone" dataKey="realizado" stroke="#0A2E50" strokeWidth={3} name="Físico Real" />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
     </Card>
   );
 }

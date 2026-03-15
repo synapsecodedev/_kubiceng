@@ -1,10 +1,10 @@
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { FileText, Upload, FolderOpen, Calendar, DollarSign, Plus, Pencil, Trash2 } from 'lucide-react';
+import { FileText, Upload, FolderOpen, Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Progress } from '@/app/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { useEffect, useState } from 'react';
 import {
   getProjects, createProject, deleteProject,
@@ -12,8 +12,7 @@ import {
   Project, ScheduleItem, BudgetItem
 } from '@/services/api';
 
-function NovoProjetoDialog({ onSuccess }: { onSuccess: () => void }) {
-  const [open, setOpen] = useState(false);
+function NovoProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => void, open: boolean, setOpen: (open: boolean) => void }) {
   const [form, setForm] = useState({ name: '', version: '1.0', status: 'revisao' });
   const [loading, setLoading] = useState(false);
 
@@ -32,12 +31,6 @@ function NovoProjetoDialog({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#0A2E50]">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Documento
-        </Button>
-      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Novo Documento / Projeto</DialogTitle>
@@ -89,19 +82,22 @@ function NovoProjetoDialog({ onSuccess }: { onSuccess: () => void }) {
 
 export function EngenhariaModule() {
   const [projetos, setProjetos] = useState<Project[]>([]);
+  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const [cronograma, setCronograma] = useState<ScheduleItem[]>([]);
   const [orcamento, setOrcamento] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const loadProjetos = async () => {
     try {
       const data = await getProjects();
       setProjetos(data);
-      // Carregar cronograma e orçamento do primeiro projeto
       if (data.length > 0) {
+        // Garantir que o index ativo ainda é válido
+        const index = activeProjectIndex < data.length ? activeProjectIndex : 0;
         const [sched, budg] = await Promise.all([
-          getSchedule(data[0].id),
-          getBudget(data[0].id),
+          getSchedule(data[index].id),
+          getBudget(data[index].id),
         ]);
         setCronograma(sched);
         setOrcamento(budg);
@@ -111,13 +107,16 @@ export function EngenhariaModule() {
     }
   };
 
-  useEffect(() => { loadProjetos(); }, []);
+  useEffect(() => { loadProjetos(); }, [activeProjectIndex]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este documento?')) return;
     await deleteProject(id);
+    if (activeProjectIndex > 0) setActiveProjectIndex(activeProjectIndex - 1);
     loadProjetos();
   };
+
+  const activeProject = projetos[activeProjectIndex];
 
   return (
     <div className="space-y-6">
@@ -128,11 +127,22 @@ export function EngenhariaModule() {
           <p className="text-gray-600">Gestão de documentos, cronogramas e orçamentos executivos</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          {projetos.length > 1 && (
+            <select 
+              className="border rounded-md px-3 py-2 text-sm bg-white"
+              value={activeProjectIndex}
+              onChange={(e) => setActiveProjectIndex(Number(e.target.value))}
+            >
+              {projetos.map((p, i) => (
+                <option key={p.id} value={i}>{p.name}</option>
+              ))}
+            </select>
+          )}
+          <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Upload Projeto
           </Button>
-          <NovoProjetoDialog onSuccess={loadProjetos} />
+          <NovoProjetoDialog onSuccess={loadProjetos} open={isDialogOpen} setOpen={setIsDialogOpen} />
         </div>
       </div>
 
@@ -155,7 +165,9 @@ export function EngenhariaModule() {
         {/* GED Tab */}
         <TabsContent value="ged" className="space-y-4">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Projetos - Residencial Torres do Mar</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              {activeProject ? `Projetos - ${activeProject.name}` : 'GED - Documentos de Engenharia'}
+            </h3>
             {loading ? (
               <p className="text-sm text-gray-500">Carregando...</p>
             ) : projetos.length === 0 ? (
