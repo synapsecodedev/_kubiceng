@@ -1,10 +1,10 @@
-// api/index.ts — Unified Vercel Handler
+// api/index.ts — Cleaned Vercel Handler
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 
-// Import central prisma (lazy-loaded proxy)
-import { prisma } from "../backend/src/lib/prisma";
+// Import central prisma (lazy-loaded proxy) - ensuring it's loaded
+import "../backend/src/lib/prisma";
 
 // Import all routes
 import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
@@ -20,8 +20,7 @@ import { healthRoutes } from "../backend/src/routes/health.routes";
 
 const app = Fastify({ 
   logger: false,
-  // Increase timeout for serverless
-  pluginTimeout: 20000 
+  pluginTimeout: 30000 
 });
 
 let isReady = false;
@@ -30,7 +29,7 @@ async function buildApp() {
   
   await app.register(cors, { origin: "*" });
   
-  // Register all routes from their modules
+  // Register routes - NO DUPLICATES
   await app.register(healthRoutes);
   await app.register(authRoutes);
   await app.register(adminRoutes);
@@ -51,6 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await buildApp();
     const url = req.url?.replace(/^\/api/, "") || "/";
     
+    // Inject the request into Fastify
     const response = await app.inject({
       method: req.method as any,
       url,
@@ -65,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error: any) {
     console.error("VERCEL API CRITICAL ERROR:", error);
     res.status(500).json({
-      error: "Vercel Execution Failure",
+      error: "Vercel Boot/Execution Error",
       message: error.message,
       stack: error.stack,
     });
