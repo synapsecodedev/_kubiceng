@@ -161,8 +161,10 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
             <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-blue-400/10 rounded-full blur-3xl animate-pulse" />
             
             <div className="relative z-10 flex flex-col items-center">
-              <img src={logo} alt="KubicEng" className="h-10 mb-8 mx-auto brightness-0 invert" />
-              <h2 className="text-3xl font-bold mb-4">Novo aqui?</h2>
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+                <img src={logo} alt="KubicEng" className="h-8 w-auto" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4 text-white">Novo aqui?</h2>
               <p className="text-white/80 mb-8 leading-relaxed text-sm">
                 Crie sua conta agora e comece a digitalizar seus canteiros de obra.
               </p>
@@ -186,8 +188,10 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
           <div className="flex-[0.8] bg-[#0A2E50] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
             <div className="relative z-10 flex flex-col items-center">
-              <img src={logo} alt="KubicEng" className="h-10 mb-8 mx-auto brightness-0 invert" />
-              <h2 className="text-3xl font-bold mb-4">Seja bem-vindo!</h2>
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+                <img src={logo} alt="KubicEng" className="h-8 w-auto" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4 text-white">Seja bem-vindo!</h2>
               <p className="text-white/80 mb-8 leading-relaxed text-sm">
                 Para manter-se conectado, faça login com suas informações pessoais.
               </p>
