@@ -212,7 +212,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
     return monthlyPrice.toFixed(0);
   };
 
-  const handleAuthOpen = (planName: string = 'Pro', mode: 'login' | 'register' = 'register') => {
+  const handleAuthOpen = (planName: string = 'Pro') => {
     setSelectedPlan(planName);
     setIsAuthOpen(true);
   };
@@ -276,7 +276,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
           <div className="relative pt-[56.25%]"> {/* 16:9 Aspect Ratio */}
             <iframe
               className="absolute top-0 left-0 w-full h-full rounded-lg"
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" // Replace with actual video URL
+              src="https://www.youtube.com/embed/RbliK3D1H_k?autoplay=1"
               title="KubicEng Demo Video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -307,8 +307,8 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
           </nav>
 
           <div className="hidden md:flex gap-3">
-            <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/5 text-sm" onClick={() => handleAuthOpen('Pro', 'login')}>Entrar</Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-9 px-4" onClick={() => handleAuthOpen('Pro', 'register')}>
+            <Button variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/5 text-sm" onClick={() => handleAuthOpen('Pro')}>Entrar</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-9 px-4" onClick={() => handleAuthOpen('Pro')}>
               Começar Grátis
             </Button>
           </div>
@@ -324,8 +324,8 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
             <a href="#planos" className="text-gray-400 hover:text-white py-2" onClick={() => setIsMobileMenuOpen(false)}>Planos</a>
             <a href="#contato" className="text-gray-400 hover:text-white py-2" onClick={() => setIsMobileMenuOpen(false)}>Contato</a>
             <div className="flex flex-col gap-3 pt-4 border-t border-white/5">
-            <Button variant="ghost" className="text-gray-400 hover:text-white justify-start" onClick={() => { handleAuthOpen('Pro', 'login'); setIsMobileMenuOpen(false); }}>Entrar</Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { handleAuthOpen('Pro', 'register'); setIsMobileMenuOpen(false); }}>Começar Grátis</Button>
+            <Button variant="ghost" className="text-gray-400 hover:text-white justify-start" onClick={() => { handleAuthOpen('Pro'); setIsMobileMenuOpen(false); }}>Entrar</Button>
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { handleAuthOpen('Pro'); setIsMobileMenuOpen(false); }}>Começar Grátis</Button>
             </div>
           </div>
         )}
@@ -384,7 +384,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 transition={{ duration: 0.6, delay: 0.6 }}
                 className="flex flex-col sm:flex-row gap-4 mb-16"
               >
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base font-semibold" onClick={() => handleAuthOpen('Pro', 'register')}>
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base font-semibold" onClick={() => handleAuthOpen('Pro')}>
                   Teste Grátis por 7 Dias
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -568,7 +568,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 </ul>
               </CardContent>
                 <CardFooter>
-                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Start', 'register')}>Escolher Start</Button>
+                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Start')}>Escolher Start</Button>
               </CardFooter>
             </Card>
 
@@ -594,7 +594,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 </ul>
               </CardContent>
               <CardFooter className="pb-6">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11" onClick={() => handleAuthOpen('Pro', 'register')}>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11" onClick={() => handleAuthOpen('Pro')}>
                   Testar Grátis
                 </Button>
               </CardFooter>
@@ -619,7 +619,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Business', 'register')}>Escolher Business</Button>
+                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Business')}>Escolher Business</Button>
               </CardFooter>
             </Card>
 
@@ -649,7 +649,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                 <div className="text-xs text-gray-600">*Inclui todos os módulos e suporte 24/7.</div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Personalizado', 'register')}>Contatar Vendas</Button>
+                <Button className="w-full border-white/10 text-gray-300 hover:text-white hover:border-white/20 bg-transparent" variant="outline" onClick={() => handleAuthOpen('Personalizado')}>Contatar Vendas</Button>
               </CardFooter>
             </Card>
           </div>
@@ -698,7 +698,7 @@ export function LandingPage({ onLogin, onNavigate }: LandingPageProps) {
                   <Label className="text-gray-400" htmlFor="tel">Telefone</Label>
                   <Input id="tel" placeholder="(11) 99999-9999" className="bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
                 </div>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleAuthOpen('Pro', 'register')}>Enviar Contato</Button>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleAuthOpen('Pro')}>Enviar Contato</Button>
               </CardContent>
             </Card>
           </div>

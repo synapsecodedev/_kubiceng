@@ -4,7 +4,8 @@
     "rootDir": ".",
     "outDir": "./dist-api",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "backend/*": ["./backend/src/*"]
     }
   },
   "include": ["api/**/*", "backend/src/**/*"]

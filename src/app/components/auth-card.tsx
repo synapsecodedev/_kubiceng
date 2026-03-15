@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Mail, User, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, User, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
@@ -19,6 +19,7 @@ interface AuthCardProps {
 
 export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }: AuthCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Login State
   const [loginEmail, setLoginEmail] = useState('');
@@ -110,13 +111,20 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input 
                     id="login-pass" 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     placeholder="••••••••" 
-                    className="pl-10 h-12 bg-gray-50 border-gray-200"
+                    className="pl-10 pr-10 h-12 bg-gray-50 border-gray-200"
                     value={loginPass}
                     onChange={(e) => setLoginPass(e.target.value)}
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
               
@@ -259,13 +267,20 @@ export function AuthCard({ onLogin, onRegister, isLoading, defaultPlan = 'Pro' }
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <Input 
                     id="reg-pass" 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     placeholder="••••••••" 
-                    className="pl-9 h-10 text-sm bg-gray-50"
+                    className="pl-9 pr-10 h-10 text-sm bg-gray-50"
                     value={regPass}
                     onChange={(e) => setRegPass(e.target.value)}
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
               </div>
 

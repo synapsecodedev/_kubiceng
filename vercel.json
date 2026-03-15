@@ -7,8 +7,9 @@
   ],
   "functions": {
     "api/index.ts": {
-      "memory": 512,
-      "maxDuration": 30
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "{backend/src/routes/**,backend/src/lib/**}"
     }
   }
 }
