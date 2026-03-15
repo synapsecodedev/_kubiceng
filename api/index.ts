@@ -3,6 +3,7 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 
+<<<<<<< HEAD
 // Static imports to ensure Vercel bundles them
 import { authRoutes } from "../backend/src/routes/auth.routes";
 import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
@@ -17,6 +18,8 @@ import { healthRoutes } from "../backend/src/routes/health.routes";
 import { profileRoutes } from "../backend/src/routes/profile.routes";
 import { prisma } from "../backend/src/lib/prisma";
 
+=======
+>>>>>>> 1a39ddb1614c55327206f8b376ca9935a45fddab
 console.log("LAMBDA_INIT: Module Load");
 
 const app = fastify({ 
@@ -63,6 +66,7 @@ async function configureApp() {
   });
 
   try {
+<<<<<<< HEAD
     console.log("LAMBDA_INIT: Registering Routes...");
     
     const safeRegister = async (name: string, routeFn: any) => {
@@ -86,6 +90,34 @@ async function configureApp() {
     await safeRegister("suprimentosRoutes", suprimentosRoutes);
     await safeRegister("comercialRoutes", comercialRoutes);
     await safeRegister("dashboardRoutes", dashboardRoutes);
+=======
+    console.log("LAMBDA_INIT: Registering Routes (Dynamic)...");
+    
+    // Helper to register routes with isolation
+    const register = async (name: string, path: string) => {
+      console.log(`LAMBDA_INIT: Loading ${name}...`);
+      try {
+        const module = await import(path);
+        const routeFn = module[name] || module.default;
+        await app.register(routeFn as any);
+      } catch (e: any) {
+        console.error(`LAMBDA_INIT: Failed to load ${name}`, e);
+        throw new Error(`Module Load Failure: ${name} -> ${e.message}`);
+      }
+    };
+
+    await register("healthRoutes", "../backend/src/routes/health.routes");
+    await register("authRoutes", "../backend/src/routes/auth.routes");
+    await register("profileRoutes", "../backend/src/routes/profile.routes");
+    await register("adminRoutes", "../backend/src/routes/admin.routes");
+    await register("engenhariaRoutes", "../backend/src/routes/engenharia.routes");
+    await register("execucaoRoutes", "../backend/src/routes/execucao.routes");
+    await register("financeiroRoutes", "../backend/src/routes/financeiro.routes");
+    await register("pessoasRoutes", "../backend/src/routes/pessoas.routes");
+    await register("suprimentosRoutes", "../backend/src/routes/suprimentos.routes");
+    await register("comercialRoutes", "../backend/src/routes/comercial.routes");
+    await register("dashboardRoutes", "../backend/src/routes/dashboard.routes");
+>>>>>>> 1a39ddb1614c55327206f8b376ca9935a45fddab
 
     await app.ready();
     isConfigured = true;
