@@ -37,7 +37,7 @@ export const getPrisma = () => {
 
 // Lazy getter for the prisma export to avoid breaking existing code
 export const prisma = new Proxy({} as PrismaClient, {
-  get: (target, prop) => {
+  get: (_target, prop: string | symbol) => {
     const instance = getPrisma();
     const value = (instance as any)[prop];
     return typeof value === 'function' ? value.bind(instance) : value;

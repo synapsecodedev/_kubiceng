@@ -50,7 +50,7 @@ export async function adminRoutes(app: FastifyInstance) {
       }),
     ])
 
-    const totalMRR = revenueByPlan.reduce((acc, p) => acc + (p.price * p._count.subscriptions), 0)
+    const totalMRR = (revenueByPlan as any[]).reduce((acc: number, p: any) => acc + (p.price * (p as any)._count.subscriptions), 0)
 
     return {
       kpis: {

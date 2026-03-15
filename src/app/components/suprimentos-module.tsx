@@ -1,7 +1,7 @@
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
-import { ShoppingCart, FileText, CheckCircle, Clock } from 'lucide-react';
+import { ShoppingCart, CheckCircle, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { useEffect, useState } from 'react';
 import {
@@ -159,7 +159,7 @@ export function SuprimentosModule() {
                   {/* Cotações inline */}
                   {req.cotacoes && req.cotacoes.length > 0 && (
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {req.cotacoes.map((cot, idx) => (
+                      {req.cotacoes.map((cot) => (
                         <div key={cot.id} className={`p-3 border rounded-lg ${cot.selecionada ? 'border-green-500 bg-green-50' : ''}`}>
                           {cot.selecionada && <Badge className="mb-1 bg-green-500">Selecionada</Badge>}
                           <p className="font-semibold text-sm">{cot.fornecedor}</p>

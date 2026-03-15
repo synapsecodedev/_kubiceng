@@ -3,13 +3,11 @@ import {
   Users, 
   CreditCard, 
   TrendingUp, 
-  Settings, 
-  LogOut, 
-  ChevronLeft, 
+  LogOut,
+  ChevronLeft,
   ChevronRight,
   ShieldCheck
 } from 'lucide-react';
-import { Button } from '@/app/components/ui/button';
 import { cn } from '@/app/components/ui/utils';
 import { useState } from 'react';
 

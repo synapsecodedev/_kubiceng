@@ -1,7 +1,7 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+
 import { PrismaClient } from "@prisma/client";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(_req: any, res: any) {
   console.log("DB_TEST: Starting connection test...");
   const prisma = new PrismaClient();
   

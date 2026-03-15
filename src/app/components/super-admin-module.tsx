@@ -91,7 +91,6 @@ export function SuperAdminModule({
   const [financials, setFinancials] = useState<FinancialData[]>([]);
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
 
   // Buscar dados reais da API
   useEffect(() => {
@@ -118,7 +117,7 @@ export function SuperAdminModule({
           mrr: 0
         });
       } finally {
-        setIsLoading(false);
+        // isLoading is not used in this version
       }
     }
 
@@ -190,14 +189,16 @@ export function SuperAdminModule({
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={plansDist}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      {/* @ts-ignore */}
                       <XAxis dataKey="nome" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} {...({} as any)} />
+                      {/* @ts-ignore */}
                       <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} {...({} as any)} />
                       <Tooltip 
                         contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
                         cursor={{fill: '#f9fafb'}}
                       />
                       <Bar dataKey="quantidade" radius={[4, 4, 0, 0]}>
-                        {plansDist.map((entry, index) => (
+                        {plansDist.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Bar>
@@ -228,7 +229,7 @@ export function SuperAdminModule({
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {COLORS.map((entry, index) => (
+                        {COLORS.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -411,8 +412,8 @@ function FinancialTab({ financials, kpis }: { financials: FinancialData[], kpis:
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {financials.map((f, i) => (
-                <tr key={i} className="hover:bg-gray-50/50">
+              {financials.map((f) => (
+                <tr key={f.nome} className="hover:bg-gray-50/50">
                   <td className="px-6 py-4 font-semibold">{f.nome}</td>
                   <td className="px-6 py-4 text-gray-500">{f.assinantes}</td>
                   <td className="px-6 py-4 text-right font-medium">R$ {f.receita.toLocaleString()}</td>
@@ -426,7 +427,7 @@ function FinancialTab({ financials, kpis }: { financials: FinancialData[], kpis:
   );
 }
 
-function DropdownActions({ user, onUpdate }: { user: UserAccount, onUpdate: (status: string) => Promise<void> }) {
+function DropdownActions({ user: _user, onUpdate }: { user: UserAccount, onUpdate: (status: string) => Promise<void> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

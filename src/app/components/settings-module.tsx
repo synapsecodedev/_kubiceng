@@ -8,7 +8,7 @@ import { api } from '@/services/api';
 import { toast } from 'sonner';
 
 export function SettingsModule() {
-  const { user, login } = usePlan();
+  const { user } = usePlan();
   const [loading, setLoading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);

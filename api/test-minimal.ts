@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+
 import fastify from "fastify";
 import cors from "@fastify/cors";
 
@@ -10,7 +10,7 @@ app.get("/test-minimal", async () => {
   return { status: "minimal-ok", time: new Date().toISOString() };
 });
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   try {
     const response = await app.inject({
       method: req.method as any,
