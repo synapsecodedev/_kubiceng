@@ -3,101 +3,71 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 
-// Static imports to ensure Vercel bundles them
+// Core routes only for stability test
 import { authRoutes } from "../backend/src/routes/auth.routes";
 import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
-import { dashboardRoutes } from "../backend/src/routes/dashboard.routes";
-import { financeiroRoutes } from "../backend/src/routes/financeiro.routes";
-import { suprimentosRoutes } from "../backend/src/routes/suprimentos.routes";
-import { execucaoRoutes } from "../backend/src/routes/execucao.routes";
-import { pessoasRoutes } from "../backend/src/routes/pessoas.routes";
-import { comercialRoutes } from "../backend/src/routes/comercial.routes";
-import { adminRoutes } from "../backend/src/routes/admin.routes";
 import { healthRoutes } from "../backend/src/routes/health.routes";
 import { profileRoutes } from "../backend/src/routes/profile.routes";
+import { adminRoutes } from "../backend/src/routes/admin.routes";
 import { prisma } from "../backend/src/lib/prisma";
 
-console.log("LAMBDA_INIT: Module Load");
+console.log("LAMBDA_INIT: Module Load Started");
 
 const app = fastify({ 
   logger: true,
-  pluginTimeout: 30000 
+  pluginTimeout: 10000 
 });
 
 let isConfigured = false;
 
+// Global process listeners for hidden crashes
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("CRITICAL: Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("CRITICAL: Uncaught Exception:", err);
+});
+
 async function configureApp() {
   if (isConfigured) return;
   
-  console.log("LAMBDA_INIT: Configuring Fastify...");
-  
+  console.log("LAMBDA_INIT: Configuring plugins...");
   await app.register(cors, { origin: "*" });
-  
+  await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
+
+  // Minimal test endpoints
   app.get("/test-ping", async () => {
-    return { status: "alive", time: new Date().toISOString(), bundled: true };
+    return { status: "alive", core_only: true, time: new Date().toISOString() };
   });
 
-  app.get("/db-check", async () => {
-     try {
-       await prisma.$queryRaw`SELECT 1`;
-       return { status: "connected" };
-     } catch (e: any) {
-       return { status: "error", error: e.message };
-     }
-  });
-
-  await app.register(multipart, {
-    limits: {
-      fileSize: 10 * 1024 * 1024 // 10MB
-    }
-  });
-
-  // Global Error Handler
-  app.setErrorHandler((error: any, request, reply) => {
-    console.error("FASTIFY INTERNAL ERROR:", error);
-    reply.status(500).send({
-      error: "Fastify Internal Error",
-      message: error.message,
-      url: request.url
-    });
-  });
-
-  const registered: string[] = [];
-  try {
-    console.log("LAMBDA_INIT: Registering Routes...");
-    
-    const safeRegister = async (name: string, routeFn: any) => {
-      console.log(`LAMBDA_INIT: Registering ${name}...`);
-      try {
-        await app.register(routeFn as any);
-        registered.push(name);
-      } catch (e: any) {
-        console.error(`LAMBDA_INIT: Failed to register ${name}`, e);
-        throw new Error(`Registration Failure: ${name} -> ${e.message}`);
-      }
+  app.get("/test-env", async () => {
+    return { 
+      keys: Object.keys(process.env).filter(k => k.includes("DATABASE") || k.includes("SUPABASE")),
+      node: process.version
     };
+  });
 
-    app.get("/test-ping", async () => {
-      return { status: "alive", time: new Date().toISOString(), registered, bundled: true };
-    });
+  app.setErrorHandler((error: any, request, reply) => {
+    console.error("FASTIFY ERROR:", error);
+    reply.status(500).send({ error: "Internal Error", message: error.message });
+  });
 
-    await safeRegister("healthRoutes", healthRoutes);
-    await safeRegister("authRoutes", authRoutes);
-    await safeRegister("profileRoutes", profileRoutes);
-    await safeRegister("adminRoutes", adminRoutes);
-    await safeRegister("engenhariaRoutes", engenhariaRoutes);
-    await safeRegister("execucaoRoutes", execucaoRoutes);
-    await safeRegister("financeiroRoutes", financeiroRoutes);
-    await safeRegister("pessoasRoutes", pessoasRoutes);
-    await safeRegister("suprimentosRoutes", suprimentosRoutes);
-    await safeRegister("comercialRoutes", comercialRoutes);
-    await safeRegister("dashboardRoutes", dashboardRoutes);
+  try {
+    console.log("LAMBDA_INIT: Registering Core Routes...");
+    await app.register(healthRoutes as any);
+    await app.register(authRoutes as any);
+    await app.register(profileRoutes as any);
+    await app.register(adminRoutes as any);
+    await app.register(engenhariaRoutes as any);
 
+    console.log("LAMBDA_INIT: Waiting for app.ready()...");
     await app.ready();
+    
     isConfigured = true;
-    console.log("LAMBDA_INIT: Configuration Complete");
+    console.log("LAMBDA_INIT: Boot Success");
   } catch (err: any) {
-    console.error("DIAGNOSTIC: Configuration Failed", err);
+    console.error("LAMBDA_INIT: Boot Failed", err);
     throw err;
   }
 }
@@ -117,17 +87,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     res.status(response.statusCode);
-    const contentType = response.headers["content-type"];
-    if (contentType) res.setHeader("content-type", contentType);
+    if (response.headers["content-type"]) {
+      res.setHeader("content-type", response.headers["content-type"]);
+    }
     res.send(response.body);
     
   } catch (error: any) {
-    console.error("HANDLER FATAL ERROR:", error);
+    console.error("HANDLER FATAL:", error);
     res.status(500).json({
-      error: "Vercel Handler Crash",
+      error: "Fatal Crash",
       message: error.message,
-      stack: error.stack,
-      diag: "Failure in configureApp or injection"
+      stack: error.stack
     });
   }
 }
