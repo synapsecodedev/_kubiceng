@@ -4,6 +4,7 @@ import { MapPin, Calendar, DollarSign } from 'lucide-react';
 import { Progress } from '@/app/components/ui/progress';
 import { useEffect, useState } from 'react';
 import { getProjects, getBudget, Project } from '@/services/api';
+import { useProject } from './project-context';
 
 interface ObraDisplay {
   id: string;
@@ -15,14 +16,19 @@ interface ObraDisplay {
 }
 
 export function ObrasMap() {
+  const { selectedProject } = useProject();
   const [obras, setObras] = useState<ObraDisplay[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProjects()
-      .then(async (projetos: Project[]) => {
+      .then(async (allProjects: Project[]) => {
+        const filtered = selectedProject 
+          ? allProjects.filter(p => p.id === selectedProject.id)
+          : allProjects;
+
         const obrasComDados = await Promise.all(
-          projetos.map(async (p) => {
+          filtered.map(async (p: Project) => {
             let progressoMedio = 0;
             let orcamentoTotal = 'N/A';
             try {
@@ -47,7 +53,7 @@ export function ObrasMap() {
         setObras(obrasComDados);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedProject?.id]);
 
   const statusConfig: Record<string, { label: string; color: string }> = {
     aprovado: { label: 'Aprovado', color: 'bg-green-500' },

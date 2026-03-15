@@ -6,8 +6,9 @@ import { Camera, Users, Package as PackageIcon, FileCheck, CloudSun, CloudRain, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { useEffect, useState } from 'react';
 import { getRdos, createRdo, getFvs, assinarFvs, getEstoque, entradaEstoque, saidaEstoque, Rdo, FichaVerificacao, ItemEstoque } from '@/services/api';
+import { useProject } from './project-context';
 
-function NovoRdoDialog({ onSuccess }: { onSuccess: () => void }) {
+function NovoRdoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ obra: '', climaManha: 'sol', climaTarde: 'sol', efetivoProprio: 0, efetivoTerceiro: 0, atividades: '', fotos: 0 });
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,12 @@ function NovoRdoDialog({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await createRdo({ ...form, atividades: JSON.stringify(form.atividades.split('\n').filter(Boolean)) });
+      await createRdo({ 
+        ...form, 
+        data: new Date().toISOString(),
+        atividades: JSON.stringify(form.atividades.split('\n').filter(Boolean)),
+        projectId: selectedProjectId 
+      });
       setOpen(false);
       onSuccess();
     } finally { setLoading(false); }
@@ -118,6 +124,7 @@ function MovimentacaoDialog({ item, tipo, onSuccess }: { item: ItemEstoque; tipo
 }
 
 export function ExecucaoModule() {
+  const { selectedProject } = useProject();
   const [rdos, setRdos] = useState<Rdo[]>([]);
   const [fvsList, setFvsList] = useState<FichaVerificacao[]>([]);
   const [estoque, setEstoque] = useState<ItemEstoque[]>([]);
@@ -125,14 +132,20 @@ export function ExecucaoModule() {
   const [activeEstoque, setActiveEstoque] = useState<ItemEstoque | null>(null);
 
   const load = async () => {
-    const [r, f, e] = await Promise.all([getRdos(), getFvs(), getEstoque()]);
+    setLoading(true);
+    const projectId = selectedProject?.id;
+    const [r, f, e] = await Promise.all([
+      getRdos(projectId), 
+      getFvs(projectId), 
+      getEstoque(projectId)
+    ]);
     setRdos(r);
     setFvsList(f);
     setEstoque(e);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handleAssinar = async (id: string) => {
     await assinarFvs(id);
@@ -146,7 +159,7 @@ export function ExecucaoModule() {
           <h2 className="text-2xl font-bold text-gray-900">Execução e Canteiro</h2>
           <p className="text-gray-600">Diário de obra, qualidade e controle de almoxarifado</p>
         </div>
-        <NovoRdoDialog onSuccess={load} />
+        <NovoRdoDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
       </div>
 
       <Tabs defaultValue="rdo" className="w-full">

@@ -10,6 +10,8 @@ import { dashboardRoutes } from "./routes/dashboard.routes";
 import { authRoutes } from "./routes/auth.routes";
 import { adminRoutes } from "./routes/admin.routes";
 import { healthRoutes } from "./routes/health.routes";
+import { profileRoutes } from "./routes/profile.routes";
+import multipart from "@fastify/multipart";
 
 const app = fastify();
 
@@ -27,6 +29,8 @@ app.register(pessoasRoutes);
 app.register(suprimentosRoutes);
 app.register(comercialRoutes);
 app.register(dashboardRoutes);
+app.register(profileRoutes);
+app.register(multipart);
 
 app.listen({ port: 3333 }).then(() => {
   console.log("HTTP Server running on http://localhost:3333");

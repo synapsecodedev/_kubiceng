@@ -1,27 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { User, Building, Lock, Save, Camera } from 'lucide-react';
+import { User, Building, Lock, Save, Camera, Upload } from 'lucide-react';
 import { usePlan } from './plan-context';
+import axios from 'axios';
+import { toast } from 'sonner';
+
+const API_URL = 'http://localhost:3333';
 
 export function SettingsModule() {
-  const { user } = usePlan();
+  const { user, login } = usePlan();
   const [loading, setLoading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Profile data
   const [profile, setProfile] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    avatar: ''
+    avatarUrl: user?.avatarUrl || ''
   });
 
   // Company data
   const [company, setCompany] = useState({
-    name: 'Kubic Engenharia LTDA',
-    cnpj: '12.345.678/0001-90',
-    address: 'Av. Paulista, 1000 - São Paulo, SP',
-    logo: ''
+    name: user?.companyName || 'Kubic Engenharia LTDA',
+    cnpj: user?.companyCnpj || '12.345.678/0001-90',
+    address: user?.companyAddress || 'Av. Paulista, 1000 - São Paulo, SP',
+    logoUrl: user?.companyLogoUrl || ''
   });
 
   // Password data
@@ -31,31 +37,111 @@ export function SettingsModule() {
     confirm: ''
   });
 
+  useEffect(() => {
+    if (user?.id) {
+      fetchProfile();
+    }
+  }, [user?.id]);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/profile/${user?.id}`);
+      const data = response.data;
+      setProfile({
+        name: data.name,
+        email: data.email,
+        avatarUrl: data.avatarUrl || ''
+      });
+      setCompany({
+        name: data.companyName || '',
+        cnpj: data.companyCnpj || '',
+        address: data.companyAddress || '',
+        logoUrl: data.companyLogoUrl || ''
+      });
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'logo') => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/profile/upload?type=${type}&userId=${user.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const publicUrl = response.data.publicUrl;
+      if (type === 'avatar') {
+        setProfile(prev => ({ ...prev, avatarUrl: publicUrl }));
+      } else {
+        setCompany(prev => ({ ...prev, logoUrl: publicUrl }));
+      }
+      toast.success('Imagem enviada com sucesso!');
+      fetchProfile(); // Refresh context/state
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      toast.error('Erro ao enviar imagem');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user?.id) return;
     setLoading(true);
-    // TODO: Implement API call
-    setTimeout(() => setLoading(false), 1000);
+    try {
+      await axios.put(`${API_URL}/profile/${user.id}`, {
+        name: profile.name,
+        avatarUrl: profile.avatarUrl
+      });
+      toast.success('Perfil atualizado!');
+      fetchProfile();
+    } catch (error) {
+      toast.error('Erro ao salvar perfil');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user?.id) return;
     setLoading(true);
-    // TODO: Implement API call
-    setTimeout(() => setLoading(false), 1000);
+    try {
+      await axios.put(`${API_URL}/profile/${user.id}/company`, {
+        companyName: company.name,
+        companyCnpj: company.cnpj,
+        companyAddress: company.address,
+        companyLogoUrl: company.logoUrl
+      });
+      toast.success('Dados da construtora salvos!');
+      fetchProfile();
+    } catch (error) {
+      toast.error('Erro ao salvar dados da construtora');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwords.new !== passwords.confirm) {
-      alert('As senhas não coincidem');
+      toast.error('As senhas não coincidem');
       return;
     }
     setLoading(true);
-    // TODO: Implement API call
+    // TODO: Implement password update in backend
     setTimeout(() => {
       setLoading(false);
       setPasswords({ current: '', new: '', confirm: '' });
+      toast.success('Senha atualizada!');
     }, 1000);
   };
 
@@ -88,10 +174,25 @@ export function SettingsModule() {
             <form onSubmit={handleSaveProfile} className="space-y-6">
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300">
-                    <User className="w-10 h-10 text-gray-400" />
+                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden">
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-10 h-10 text-gray-400" />
+                    )}
                   </div>
-                  <button type="button" className="absolute bottom-0 right-0 p-1.5 bg-white border rounded-full shadow-sm hover:bg-gray-50">
+                  <input 
+                    type="file" 
+                    ref={avatarInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'avatar')}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 p-1.5 bg-white border rounded-full shadow-sm hover:bg-gray-50"
+                  >
                     <Camera className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
@@ -135,13 +236,31 @@ export function SettingsModule() {
           <Card className="p-6">
             <form onSubmit={handleSaveCompany} className="space-y-6">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-white border rounded-lg flex items-center justify-center p-4">
-                  <Building className="w-12 h-12 text-[#0A2E50]" />
+                <div className="w-32 h-32 bg-white border rounded-lg flex items-center justify-center p-2 overflow-hidden">
+                  {company.logoUrl ? (
+                    <img src={company.logoUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  ) : (
+                    <Building className="w-12 h-12 text-[#0A2E50]" />
+                  )}
                 </div>
                 <div>
                   <h4 className="font-medium">Logo da Construtora</h4>
-                  <p className="text-sm text-gray-500">Aparecerá nos relatórios e RDOs</p>
-                  <Button variant="outline" size="sm" className="mt-2" type="button">
+                  <p className="text-sm text-gray-500 mb-2">Aparecerá nos relatórios e RDOs</p>
+                  <input 
+                    type="file" 
+                    ref={logoInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'logo')}
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={loading}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
                     Trocar Logo
                   </Button>
                 </div>

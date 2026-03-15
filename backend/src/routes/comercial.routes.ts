@@ -4,8 +4,10 @@ import { z } from 'zod'
 
 export async function comercialRoutes(app: FastifyInstance) {
   // ===== CLIENTES =====
-  app.get('/clientes', async () => {
+  app.get('/clientes', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
     return prisma.cliente.findMany({
+      where: projectId ? { projectId } : {},
       include: { chamados: true },
       orderBy: { nome: 'asc' },
     })
@@ -18,6 +20,7 @@ export async function comercialRoutes(app: FastifyInstance) {
       obra: z.string(),
       progresso: z.number().int().min(0).max(100).default(0),
       entregaPrevista: z.string().optional(),
+      projectId: z.string().optional(),
     })
     const body = schema.parse(request.body)
     const cliente = await prisma.cliente.create({
@@ -38,8 +41,10 @@ export async function comercialRoutes(app: FastifyInstance) {
   })
 
   // ===== CHAMADOS =====
-  app.get('/chamados', async () => {
+  app.get('/chamados', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
     return prisma.chamado.findMany({
+      where: projectId ? { cliente: { projectId } } : {},
       include: { cliente: { select: { nome: true, unidade: true } } },
       orderBy: { createdAt: 'desc' },
     })

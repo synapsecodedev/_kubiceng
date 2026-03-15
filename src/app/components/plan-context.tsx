@@ -7,6 +7,11 @@ interface User {
   name: string;
   email: string;
   role: UserRole;
+  avatarUrl?: string;
+  companyName?: string;
+  companyCnpj?: string;
+  companyAddress?: string;
+  companyLogoUrl?: string;
 }
 
 interface Subscription {

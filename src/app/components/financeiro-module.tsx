@@ -12,8 +12,9 @@ import {
   getFluxoCaixa,
   ContaPagar, Medicao, FluxoCaixa
 } from '@/services/api';
+import { useProject } from './project-context';
 
-function NovaMedicaoDialog({ onSuccess }: { onSuccess: () => void }) {
+function NovaMedicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ empreiteiro: '', servico: '', periodo: '', executado: '', valor: '' });
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,11 @@ function NovaMedicaoDialog({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await createMedicao({ ...form, valor: parseFloat(form.valor) });
+      await createMedicao({ 
+        ...form, 
+        valor: parseFloat(form.valor),
+        projectId: selectedProjectId 
+      });
       setOpen(false);
       setForm({ empreiteiro: '', servico: '', periodo: '', executado: '', valor: '' });
       onSuccess();
@@ -35,7 +40,7 @@ function NovaMedicaoDialog({ onSuccess }: { onSuccess: () => void }) {
       <DialogContent>
         <DialogHeader><DialogTitle>Nova Medição de Empreiteiro</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {[['empreiteiro', 'Empreiteiro'], ['servico', 'Serviço'], ['periodo', 'Período (ex: Jan/2026)'], ['executado', 'Executado (ex: 68%)']].map(([key, label]) => (
+          {[['empreiteiro', 'Empreiteiro'], ['servico', 'Serviço'], ['periodo', 'Período (ex: Jan/2026)'], ['executado', 'Executado (ex: 68%)']].map(([key, label]: string[]) => (
             <div key={key}>
               <label className="text-sm font-medium">{label}</label>
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
@@ -56,20 +61,27 @@ function NovaMedicaoDialog({ onSuccess }: { onSuccess: () => void }) {
 }
 
 export function FinanceiroModule() {
+  const { selectedProject } = useProject();
   const [contas, setContas] = useState<ContaPagar[]>([]);
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
   const [fluxo, setFluxo] = useState<FluxoCaixa[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [c, m, f] = await Promise.all([getContasPagar(), getMedicoes(), getFluxoCaixa()]);
+    setLoading(true);
+    const projectId = selectedProject?.id;
+    const [c, m, f] = await Promise.all([
+      getContasPagar(projectId), 
+      getMedicoes(projectId), 
+      getFluxoCaixa(projectId)
+    ]);
     setContas(c);
     setMedicoes(m);
     setFluxo(f);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handlePagar = async (id: string) => {
     await pagarConta(id);
@@ -81,9 +93,9 @@ export function FinanceiroModule() {
     load();
   };
 
-  const saldoDisponivel = medicoes.filter(m => m.status === 'aprovado').reduce((s, m) => s + m.liquido, 0);
-  const aPagar30 = contas.filter(c => c.status !== 'pago').reduce((s, c) => s + c.valor, 0);
-  const pendentes = medicoes.filter(m => m.status === 'pendente').length;
+  const saldoDisponivel = medicoes.filter((m: Medicao) => m.status === 'aprovado').reduce((s: number, m: Medicao) => s + m.liquido, 0);
+  const aPagar30 = contas.filter((c: ContaPagar) => c.status !== 'pago').reduce((s: number, c: ContaPagar) => s + c.valor, 0);
+  const pendentes = medicoes.filter((m: Medicao) => m.status === 'pendente').length;
 
   return (
     <div className="space-y-6">
@@ -92,7 +104,7 @@ export function FinanceiroModule() {
           <h2 className="text-2xl font-bold text-gray-900">Financeiro e Medições</h2>
           <p className="text-gray-600">Contas, medições de empreiteiros e fluxo de caixa</p>
         </div>
-        <NovaMedicaoDialog onSuccess={load} />
+        <NovaMedicaoDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

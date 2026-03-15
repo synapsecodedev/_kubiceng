@@ -9,8 +9,9 @@ import {
   getOrdens, selecionarCotacao,
   Requisicao, OrdemCompra
 } from '@/services/api';
+import { useProject } from './project-context';
 
-function NovaRequisicaoDialog({ onSuccess }: { onSuccess: () => void }) {
+function NovaRequisicaoDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ item: '', obra: '', solicitante: '', valor: '' });
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,11 @@ function NovaRequisicaoDialog({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await createRequisicao({ ...form, valor: parseFloat(form.valor) });
+      await createRequisicao({ 
+        ...form, 
+        valor: parseFloat(form.valor),
+        projectId: selectedProjectId 
+      });
       setOpen(false);
       setForm({ item: '', obra: '', solicitante: '', valor: '' });
       onSuccess();
@@ -53,18 +58,24 @@ function NovaRequisicaoDialog({ onSuccess }: { onSuccess: () => void }) {
 }
 
 export function SuprimentosModule() {
+  const { selectedProject } = useProject();
   const [requisicoes, setRequisicoes] = useState<Requisicao[]>([]);
   const [ordens, setOrdens] = useState<OrdemCompra[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [r, o] = await Promise.all([getRequisicoes(), getOrdens()]);
+    setLoading(true);
+    const projectId = selectedProject?.id;
+    const [r, o] = await Promise.all([
+      getRequisicoes(projectId), 
+      getOrdens(projectId)
+    ]);
     setRequisicoes(r);
     setOrdens(o);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handleAprovar = async (id: string) => { await aprovarRequisicao(id); load(); };
   const handleSelecionar = async (cotacaoId: string) => { await selecionarCotacao(cotacaoId); load(); };
@@ -93,7 +104,7 @@ export function SuprimentosModule() {
           <h2 className="text-2xl font-bold text-gray-900">Suprimentos e Compras</h2>
           <p className="text-gray-600">Requisições, cotações e ordens de compra</p>
         </div>
-        <NovaRequisicaoDialog onSuccess={load} />
+        <NovaRequisicaoDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

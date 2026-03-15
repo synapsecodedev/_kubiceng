@@ -4,8 +4,12 @@ import { z } from 'zod'
 
 export async function financeiroRoutes(app: FastifyInstance) {
   // ===== CONTAS A PAGAR =====
-  app.get('/contas-pagar', async () => {
-    return prisma.contaPagar.findMany({ orderBy: { vencimento: 'asc' } })
+  app.get('/contas-pagar', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
+    return prisma.contaPagar.findMany({ 
+      where: projectId ? { projectId } : {},
+      orderBy: { vencimento: 'asc' } 
+    })
   })
 
   app.post('/contas-pagar', async (request, reply) => {
@@ -13,6 +17,7 @@ export async function financeiroRoutes(app: FastifyInstance) {
       fornecedor: z.string(),
       valor: z.number().positive(),
       vencimento: z.string(),
+      projectId: z.string().optional(),
     })
     const body = schema.parse(request.body)
     const conta = await prisma.contaPagar.create({
@@ -21,6 +26,7 @@ export async function financeiroRoutes(app: FastifyInstance) {
         valor: body.valor,
         vencimento: new Date(body.vencimento),
         status: 'pendente',
+        projectId: body.projectId,
       },
     })
     return reply.code(201).send(conta)
@@ -32,8 +38,12 @@ export async function financeiroRoutes(app: FastifyInstance) {
   })
 
   // ===== MEDIÇÕES =====
-  app.get('/medicoes', async () => {
-    return prisma.medicao.findMany({ orderBy: { createdAt: 'desc' } })
+  app.get('/medicoes', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
+    return prisma.medicao.findMany({ 
+      where: projectId ? { projectId } : {},
+      orderBy: { createdAt: 'desc' } 
+    })
   })
 
   app.post('/medicoes', async (request, reply) => {
@@ -43,6 +53,7 @@ export async function financeiroRoutes(app: FastifyInstance) {
       periodo: z.string(),
       executado: z.string(),
       valor: z.number().positive(),
+      projectId: z.string().optional(),
     })
     const body = schema.parse(request.body)
     const retencao = body.valor * 0.05
@@ -56,6 +67,7 @@ export async function financeiroRoutes(app: FastifyInstance) {
         retencao,
         liquido: body.valor - retencao,
         status: 'pendente',
+        projectId: body.projectId,
       },
     })
     return reply.code(201).send(medicao)
@@ -67,9 +79,11 @@ export async function financeiroRoutes(app: FastifyInstance) {
   })
 
   // ===== FLUXO DE CAIXA (agregado) =====
-  app.get('/fluxo-caixa', async () => {
-    const medicoes = await prisma.medicao.findMany({ where: { status: 'aprovado' } })
-    const contas = await prisma.contaPagar.findMany({ where: { status: 'pago' } })
+  app.get('/fluxo-caixa', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
+    const filter = projectId ? { projectId } : {}
+    const medicoes = await prisma.medicao.findMany({ where: { status: 'aprovado', ...filter } })
+    const contas = await prisma.contaPagar.findMany({ where: { status: 'pago', ...filter } })
 
     // Agrupa por mês
     const meses: Record<string, { mes: string; receita: number; despesa: number }> = {}

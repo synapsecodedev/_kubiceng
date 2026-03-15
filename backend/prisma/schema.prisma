@@ -23,6 +23,15 @@ model Project {
 
   scheduleItems ScheduleItem[]
   budgetItems   BudgetItem[]
+  rdos          Rdo[]
+  fvs           FichaVerificacao[]
+  contasPagar   ContaPagar[]
+  medicoes      Medicao[]
+  funcionarios  Funcionario[]
+  requisicoes   Requisicao[]
+  clientes      Cliente[]
+  itensEstoque  ItemEstoque[]
+  ordensCompra  OrdemCompra[]
 }
 
 model ScheduleItem {
@@ -57,6 +66,9 @@ model BudgetItem {
 
 model Rdo {
   id          String   @id @default(uuid())
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
   obra        String
   data        DateTime @default(now())
   climaManha  String   // 'sol', 'chuva', 'nublado'
@@ -72,6 +84,9 @@ model Rdo {
 
 model FichaVerificacao {
   id           String   @id @default(uuid())
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   titulo       String
   obra         String
   responsavel  String
@@ -84,6 +99,9 @@ model FichaVerificacao {
 
 model ItemEstoque {
   id             String   @id @default(uuid())
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   material       String
   qtdAtual       Float
   qtdMinima      Float
@@ -111,6 +129,9 @@ model MovimentacaoEstoque {
 
 model ContaPagar {
   id          String   @id @default(uuid())
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   fornecedor  String
   valor       Float
   vencimento  DateTime
@@ -122,6 +143,9 @@ model ContaPagar {
 
 model Medicao {
   id          String   @id @default(uuid())
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   empreiteiro String
   servico     String
   periodo     String
@@ -139,6 +163,9 @@ model Medicao {
 
 model Funcionario {
   id        String   @id @default(uuid())
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   nome      String
   funcao    String
   obra      String
@@ -181,6 +208,9 @@ model ItemEpi {
 
 model Requisicao {
   id          String   @id @default(uuid())
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   item        String
   obra        String
   solicitante String
@@ -208,6 +238,9 @@ model Cotacao {
 
 model OrdemCompra {
   id          String   @id @default(uuid())
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   fornecedor  String
   valor       Float
   status      String   // 'aguardando', 'transito', 'entregue', 'cancelado'
@@ -220,6 +253,9 @@ model OrdemCompra {
 
 model Cliente {
   id             String   @id @default(uuid())
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   nome           String
   unidade        String
   obra           String
@@ -282,9 +318,16 @@ model User {
   name         String
   email        String   @unique
   passwordHash String
+  avatarUrl    String?
   document     String?  // CPF ou CNPJ
   documentType String?  // 'cpf' | 'cnpj'
   role         String   @default("user")  // 'user' | 'admin' | 'superadmin'
+
+  // Company info
+  companyName    String?
+  companyCnpj    String?
+  companyAddress String?
+  companyLogoUrl String?
 
   subscription Subscription?
 

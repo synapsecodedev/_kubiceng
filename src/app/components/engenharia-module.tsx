@@ -4,13 +4,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/ta
 import { FileText, Upload, FolderOpen, Calendar, DollarSign, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Progress } from '@/app/components/ui/progress';
+import { cn } from '@/app/components/ui/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { useEffect, useState } from 'react';
 import {
-  getProjects, createProject, deleteProject,
+  createProject, deleteProject,
   getSchedule, getBudget,
   Project, ScheduleItem, BudgetItem
 } from '@/services/api';
+import { useProject } from './project-context';
 
 function NovoProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => void, open: boolean, setOpen: (open: boolean) => void }) {
   const [form, setForm] = useState({ name: '', version: '1.0', status: 'revisao' });
@@ -111,42 +113,41 @@ function UploadProjetoDialog({ onSuccess, open, setOpen }: { onSuccess: () => vo
 }
 
 export function EngenhariaModule() {
-  const [projetos, setProjetos] = useState<Project[]>([]);
-  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const { projects: projetos, selectedProject, setSelectedProject, loading: loadingProjects, refreshProjects } = useProject();
   const [cronograma, setCronograma] = useState<ScheduleItem[]>([]);
   const [orcamento, setOrcamento] = useState<BudgetItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
-  const loadProjetos = async () => {
+  const loadDetails = async () => {
+    if (!selectedProject) return;
+    setLoadingDetails(true);
     try {
-      const data = await getProjects();
-      setProjetos(data);
-      if (data.length > 0) {
-        const index = activeProjectIndex < data.length ? activeProjectIndex : 0;
-        const [sched, budg] = await Promise.all([
-          getSchedule(data[index].id),
-          getBudget(data[index].id),
-        ]);
-        setCronograma(sched);
-        setOrcamento(budg);
-      }
+      const [sched, budg] = await Promise.all([
+        getSchedule(selectedProject.id),
+        getBudget(selectedProject.id),
+      ]);
+      setCronograma(sched);
+      setOrcamento(budg);
     } finally {
-      setLoading(false);
+      setLoadingDetails(false);
     }
   };
 
-  useEffect(() => { loadProjetos(); }, [activeProjectIndex]);
+  useEffect(() => { loadDetails(); }, [selectedProject?.id]);
+
+  const handleCreated = () => {
+    refreshProjects();
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este documento?')) return;
     await deleteProject(id);
-    if (activeProjectIndex > 0) setActiveProjectIndex(activeProjectIndex - 1);
-    loadProjetos();
+    refreshProjects();
   };
 
-  const activeProject = projetos[activeProjectIndex];
+  const activeProject = selectedProject;
 
   return (
     <div className="space-y-6">
@@ -157,17 +158,6 @@ export function EngenhariaModule() {
           <p className="text-gray-600">Gestão de documentos, cronogramas e orçamentos executivos</p>
         </div>
         <div className="flex gap-2">
-          {projetos.length > 1 && (
-            <select 
-              className="border rounded-md px-3 py-2 text-sm bg-white"
-              value={activeProjectIndex}
-              onChange={(e) => setActiveProjectIndex(Number(e.target.value))}
-            >
-              {projetos.map((p, i) => (
-                <option key={p.id} value={i}>{p.name}</option>
-              ))}
-            </select>
-          )}
           <Button variant="outline" onClick={() => setIsUploadDialogOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Upload Projeto
@@ -177,8 +167,8 @@ export function EngenhariaModule() {
             Novo Projeto
           </Button>
 
-          <NovoProjetoDialog onSuccess={loadProjetos} open={isNewDialogOpen} setOpen={setIsNewDialogOpen} />
-          <UploadProjetoDialog onSuccess={loadProjetos} open={isUploadDialogOpen} setOpen={setIsUploadDialogOpen} />
+          <NovoProjetoDialog onSuccess={handleCreated} open={isNewDialogOpen} setOpen={setIsNewDialogOpen} />
+          <UploadProjetoDialog onSuccess={handleCreated} open={isUploadDialogOpen} setOpen={setIsUploadDialogOpen} />
         </div>
       </div>
 
@@ -202,16 +192,16 @@ export function EngenhariaModule() {
         <TabsContent value="ged" className="space-y-4">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">
-              {activeProject ? `Projetos - ${activeProject.name}` : 'GED - Documentos de Engenharia'}
+              {selectedProject ? `Projetos - ${selectedProject.name}` : 'GED - Documentos de Engenharia'}
             </h3>
-            {loading ? (
+            {loadingProjects ? (
               <p className="text-sm text-gray-500">Carregando...</p>
             ) : projetos.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">Nenhum documento cadastrado. Clique em "Novo Documento" para começar.</p>
+              <p className="text-sm text-gray-500 text-center py-8">Nenhum documento cadastrado. Clique em "Novo Projeto" para começar.</p>
             ) : (
               <div className="space-y-3">
-                {projetos.map((projeto) => (
-                  <div key={projeto.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                {projetos.map((projeto: Project) => (
+                  <div key={projeto.id} className={cn("flex items-center justify-between p-4 border rounded-lg transition-colors", selectedProject?.id === projeto.id ? "bg-blue-50 border-blue-200" : "hover:bg-gray-50 cursor-pointer")} onClick={() => setSelectedProject(projeto)}>
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-[#0A2E50]" />
                       <div>
@@ -223,7 +213,7 @@ export function EngenhariaModule() {
                       <Badge variant={projeto.status === 'aprovado' ? 'default' : 'outline'}>
                         {projeto.status === 'aprovado' ? 'Aprovado' : projeto.status === 'revisao' ? 'Em Revisão' : 'Em Análise'}
                       </Badge>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(projeto.id)}>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete(projeto.id); }}>
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>

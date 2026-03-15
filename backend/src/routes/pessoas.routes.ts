@@ -4,8 +4,12 @@ import { z } from 'zod'
 
 export async function pessoasRoutes(app: FastifyInstance) {
   // ===== FUNCIONÁRIOS =====
-  app.get('/funcionarios', async () => {
-    return prisma.funcionario.findMany({ orderBy: { nome: 'asc' } })
+  app.get('/funcionarios', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
+    return prisma.funcionario.findMany({ 
+      where: projectId ? { projectId } : {},
+      orderBy: { nome: 'asc' } 
+    })
   })
 
   app.get('/funcionarios/:id', async (request, reply) => {
@@ -26,6 +30,7 @@ export async function pessoasRoutes(app: FastifyInstance) {
       tipo: z.enum(['proprio', 'terceiro']),
       nr35: z.string().optional(),
       nr10: z.string().optional(),
+      projectId: z.string().optional(),
     })
     const body = schema.parse(request.body)
     const func = await prisma.funcionario.create({
@@ -83,7 +88,7 @@ export async function pessoasRoutes(app: FastifyInstance) {
 
   // ===== PONTO =====
   app.get('/ponto', async (request) => {
-    const { data } = request.query as { data?: string }
+    const { data, projectId } = request.query as { data?: string, projectId?: string }
     const date = data ? new Date(data) : new Date()
     const start = new Date(date)
     start.setHours(0, 0, 0, 0)
@@ -91,7 +96,10 @@ export async function pessoasRoutes(app: FastifyInstance) {
     end.setHours(23, 59, 59, 999)
 
     return prisma.registroPonto.findMany({
-      where: { data: { gte: start, lte: end } },
+      where: { 
+        data: { gte: start, lte: end },
+        funcionario: projectId ? { projectId } : {},
+      },
       include: { funcionario: { select: { nome: true } } },
     })
   })

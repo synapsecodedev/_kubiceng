@@ -6,14 +6,16 @@ import { Alertas } from '@/app/components/alertas';
 import { useEffect, useState } from 'react';
 import { getDashboardKpis, DashboardKpis } from '@/services/api';
 import { usePlan } from './plan-context';
+import { useProject } from './project-context';
 
 export function DashboardModule() {
+  const { selectedProject } = useProject();
   const [kpis, setKpis] = useState<DashboardKpis | null>(null);
   const { user } = usePlan();
 
   useEffect(() => {
-    getDashboardKpis().then(setKpis).catch(() => {});
-  }, []);
+    getDashboardKpis(selectedProject?.id).then(setKpis).catch(() => {});
+  }, [selectedProject?.id]);
 
   const saldoFormatado = kpis
     ? kpis.saldoCaixa >= 1000

@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/app/components/ui/sheet';
 import { useEffect, useState } from 'react';
 import { getFuncionarios, createFuncionario, getEpis, distribuirEpi, getPonto, Funcionario, ItemEpi, RegistroPonto } from '@/services/api';
+import { useProject } from './project-context';
 
-function NovoFuncionarioDialog({ onSuccess }: { onSuccess: () => void }) {
+function NovoFuncionarioDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ nome: '', funcao: '', obra: '', tipo: 'proprio' as 'proprio' | 'terceiro', nr35: '', nr10: '' });
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ function NovoFuncionarioDialog({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await createFuncionario(form);
+      await createFuncionario({ ...form, projectId: selectedProjectId });
       setOpen(false);
       setForm({ nome: '', funcao: '', obra: '', tipo: 'proprio', nr35: '', nr10: '' });
       onSuccess();
@@ -30,7 +31,7 @@ function NovoFuncionarioDialog({ onSuccess }: { onSuccess: () => void }) {
       <DialogContent>
         <DialogHeader><DialogTitle>Cadastrar Funcionário</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {[['nome', 'Nome Completo'], ['funcao', 'Função'], ['obra', 'Obra Atual']].map(([key, label]) => (
+          {[['nome', 'Nome Completo'], ['funcao', 'Função'], ['obra', 'Obra Atual']].map(([key, label]: string[]) => (
             <div key={key}>
               <label className="text-sm font-medium">{label}</label>
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
@@ -91,20 +92,27 @@ function FichaFuncionario({ func }: { func: Funcionario }) {
 }
 
 export function PessoasModule() {
+  const { selectedProject } = useProject();
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [epis, setEpis] = useState<ItemEpi[]>([]);
   const [ponto, setPonto] = useState<RegistroPonto[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [f, e, p] = await Promise.all([getFuncionarios(), getEpis(), getPonto()]);
+    setLoading(true);
+    const projectId = selectedProject?.id;
+    const [f, e, p] = await Promise.all([
+      getFuncionarios(projectId), 
+      getEpis(), 
+      getPonto(undefined, projectId)
+    ]);
     setFuncionarios(f);
     setEpis(e);
     setPonto(p);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handleDistribuirEpi = async (epiId: string) => {
     const qtd = parseInt(prompt('Quantidade a distribuir:') || '0');
@@ -123,7 +131,7 @@ export function PessoasModule() {
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Pessoas</h2>
           <p className="text-gray-600">RH, Segurança do Trabalho e controle de ponto</p>
         </div>
-        <NovoFuncionarioDialog onSuccess={load} />
+        <NovoFuncionarioDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -1,13 +1,14 @@
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
-import { Package, FileText, Wrench, CheckCircle, Clock, BookOpen, Share2, Download } from 'lucide-react';
+import { Package, FileText, Wrench, CheckCircle, Clock, BookOpen } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { useEffect, useState } from 'react';
 import { getClientes, createCliente, getChamados, agendarChamado, Cliente, Chamado } from '@/services/api';
+import { useProject } from './project-context';
 
-function NovoClienteDialog({ onSuccess }: { onSuccess: () => void }) {
+function NovoClienteDialog({ onSuccess, selectedProjectId }: { onSuccess: () => void, selectedProjectId?: string }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ nome: '', unidade: '', obra: '', progresso: '0', entregaPrevista: '' });
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,11 @@ function NovoClienteDialog({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await createCliente({ ...form, progresso: parseInt(form.progresso) });
+      await createCliente({ 
+        ...form, 
+        progresso: parseInt(form.progresso),
+        projectId: selectedProjectId
+      });
       setOpen(false);
       setForm({ nome: '', unidade: '', obra: '', progresso: '0', entregaPrevista: '' });
       onSuccess();
@@ -29,7 +34,7 @@ function NovoClienteDialog({ onSuccess }: { onSuccess: () => void }) {
       <DialogContent>
         <DialogHeader><DialogTitle>Cadastrar Cliente</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {[['nome', 'Nome Completo'], ['unidade', 'Unidade (ex: Apto 301 - Torre A)'], ['obra', 'Obra / Empreendimento']].map(([key, label]) => (
+          {[['nome', 'Nome Completo'], ['unidade', 'Unidade (ex: Apto 301 - Torre A)'], ['obra', 'Obra / Empreendimento']].map(([key, label]: string[]) => (
             <div key={key}>
               <label className="text-sm font-medium">{label}</label>
               <input className="w-full mt-1 border rounded-md px-3 py-2 text-sm" value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} required />
@@ -80,19 +85,25 @@ const ManualContent = () => (
 );
 
 export function ComercialModule() {
+  const { selectedProject } = useProject();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [c, ch] = await Promise.all([getClientes(), getChamados()]);
+    setLoading(true);
+    const projectId = selectedProject?.id;
+    const [c, ch] = await Promise.all([
+      getClientes(projectId), 
+      getChamados(projectId)
+    ]);
     setClientes(c);
     setChamados(ch);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handleAgendar = async (id: string) => { await agendarChamado(id); load(); };
 
@@ -117,7 +128,7 @@ export function ComercialModule() {
           <h2 className="text-2xl font-bold text-gray-900">Comercial e Pós-Obra</h2>
           <p className="text-gray-600">Portal do cliente e assistência técnica</p>
         </div>
-        <NovoClienteDialog onSuccess={load} />
+        <NovoClienteDialog onSuccess={load} selectedProjectId={selectedProject?.id} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

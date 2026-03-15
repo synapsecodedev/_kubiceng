@@ -3,16 +3,19 @@ import { Badge } from '@/app/components/ui/badge';
 import { AlertTriangle, Clock, DollarSign, FileWarning, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getAlertas, Alerta } from '@/services/api';
+import { useProject } from './project-context';
 
 export function Alertas() {
+  const { selectedProject } = useProject();
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAlertas()
+    setLoading(true);
+    getAlertas(selectedProject?.id)
       .then(setAlertas)
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedProject?.id]);
 
   const tipoConfig = {
     critico: { label: 'Crítico', color: 'bg-red-100 text-red-800 border-red-200', icon: AlertTriangle, iconColor: 'text-red-500' },

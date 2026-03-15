@@ -4,8 +4,10 @@ import { z } from 'zod'
 
 export async function suprimentosRoutes(app: FastifyInstance) {
   // ===== REQUISIÇÕES =====
-  app.get('/requisicoes', async () => {
+  app.get('/requisicoes', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
     return prisma.requisicao.findMany({
+      where: projectId ? { projectId } : {},
       include: { cotacoes: true },
       orderBy: { createdAt: 'desc' },
     })
@@ -17,6 +19,7 @@ export async function suprimentosRoutes(app: FastifyInstance) {
       obra: z.string(),
       solicitante: z.string(),
       valor: z.number().positive(),
+      projectId: z.string().optional(),
     })
     const body = schema.parse(request.body)
     const req = await prisma.requisicao.create({
@@ -58,7 +61,10 @@ export async function suprimentosRoutes(app: FastifyInstance) {
 
   app.patch('/cotacoes/:id/selecionar', async (request) => {
     const { id } = request.params as { id: string }
-    const cotacao = await prisma.cotacao.findUnique({ where: { id } })
+    const cotacao = await prisma.cotacao.findUnique({ 
+      where: { id },
+      include: { requisicao: true }
+    })
     if (!cotacao) return
     // Desmarcar todas da mesma requisição
     await prisma.cotacao.updateMany({
@@ -73,6 +79,7 @@ export async function suprimentosRoutes(app: FastifyInstance) {
           fornecedor: cotacao.fornecedor,
           valor: cotacao.preco,
           status: 'aguardando',
+          projectId: cotacao.requisicao.projectId,
         },
       }),
     ])
@@ -80,14 +87,19 @@ export async function suprimentosRoutes(app: FastifyInstance) {
   })
 
   // ===== ORDENS DE COMPRA =====
-  app.get('/ordens-compra', async () => {
-    return prisma.ordemCompra.findMany({ orderBy: { createdAt: 'desc' } })
+  app.get('/ordens-compra', async (request) => {
+    const { projectId } = request.query as { projectId?: string }
+    return prisma.ordemCompra.findMany({ 
+      where: projectId ? { projectId } : {},
+      orderBy: { createdAt: 'desc' } 
+    })
   })
 
   app.post('/ordens-compra', async (request, reply) => {
     const schema = z.object({
       fornecedor: z.string(),
       valor: z.number().positive(),
+      projectId: z.string().optional(),
     })
     const body = schema.parse(request.body)
     const oc = await prisma.ordemCompra.create({ data: { ...body, status: 'aguardando' } })

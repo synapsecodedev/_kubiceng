@@ -57,20 +57,25 @@ export async function authRoutes(app: FastifyInstance) {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatarUrl: user.avatarUrl,
+          companyName: user.companyName,
+          companyCnpj: user.companyCnpj,
+          companyAddress: user.companyAddress,
+          companyLogoUrl: user.companyLogoUrl,
         },
         subscription: user.subscription
           ? {
-              status: user.subscription.status,
-              plan: user.subscription.plan.name,
-              slug: user.subscription.plan.slug,
-              features: user.subscription.plan.features.reduce(
-                (acc, f) => {
-                  acc[f.module] = f.enabled;
-                  return acc;
-                },
-                {} as Record<string, boolean>,
-              ),
-            }
+               status: user.subscription.status,
+               plan: user.subscription.plan.name,
+               slug: user.subscription.plan.slug,
+               features: user.subscription.plan.features.reduce(
+                 (acc, f) => {
+                   acc[f.module] = f.enabled;
+                   return acc;
+                 },
+                 {} as Record<string, boolean>,
+               ),
+             }
           : null,
       };
     } catch (err) {
@@ -166,6 +171,11 @@ export async function authRoutes(app: FastifyInstance) {
           name: result.user.name,
           email: result.user.email,
           role: result.user.role,
+          avatarUrl: result.user.avatarUrl,
+          companyName: result.user.companyName,
+          companyCnpj: result.user.companyCnpj,
+          companyAddress: result.user.companyAddress,
+          companyLogoUrl: result.user.companyLogoUrl,
         },
         subscription: {
           status: result.subscription.status,
@@ -224,20 +234,25 @@ export async function authRoutes(app: FastifyInstance) {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatarUrl: user.avatarUrl,
+          companyName: user.companyName,
+          companyCnpj: user.companyCnpj,
+          companyAddress: user.companyAddress,
+          companyLogoUrl: user.companyLogoUrl,
         },
         subscription: user.subscription
           ? {
-              status: user.subscription.status,
-              plan: user.subscription.plan.name,
-              slug: user.subscription.plan.slug,
-              features: user.subscription.plan.features.reduce(
-                (acc, f) => {
-                  acc[f.module] = f.enabled;
-                  return acc;
-                },
-                {} as Record<string, boolean>,
-              ),
-            }
+               status: user.subscription.status,
+               plan: user.subscription.plan.name,
+               slug: user.subscription.plan.slug,
+               features: user.subscription.plan.features.reduce(
+                 (acc, f) => {
+                   acc[f.module] = f.enabled;
+                   return acc;
+                 },
+                 {} as Record<string, boolean>,
+               ),
+             }
           : null,
       };
     } catch (err) {

@@ -3,6 +3,7 @@ import { Button } from '@/app/components/ui/button';
 import { cn } from '@/app/components/ui/utils';
 import { useState } from 'react';
 import { usePlan } from './plan-context';
+import { useProject } from './project-context';
 import logoKubic from "../../assets/kubiceng-logo.png";
 
 export type ModuleType = 'dashboard' | 'engenharia' | 'suprimentos' | 'execucao' | 'financeiro' | 'pessoas' | 'comercial' | 'settings';
@@ -16,6 +17,7 @@ interface SidebarKubicProps {
 export function SidebarKubic({ activeModule, onModuleChange, onLogout }: SidebarKubicProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { canAccessModule } = usePlan();
+  const { projects, selectedProject, setSelectedProject, loading: loadingProjects } = useProject();
 
   const menuItems = [
     { id: 'dashboard' as ModuleType, icon: LayoutDashboard, label: 'Dashboard', description: 'Visão Geral' },
@@ -36,7 +38,6 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
       <div className="p-5 border-b border-white/10">
         <div className="flex items-center justify-between">
           <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
-            {/* Ícone da logo — container branco para PNG com fundo branco */}
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
               <img
                 src={logoKubic}
@@ -64,6 +65,37 @@ export function SidebarKubic({ activeModule, onModuleChange, onLogout }: Sidebar
             </Button>
           )}
         </div>
+        
+        {/* Seletor de Obra */}
+        {!collapsed && (
+          <div className="mt-6">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40 mb-2 block px-1">
+              Obra Ativa
+            </label>
+            <select
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#4A9EFF] appearance-none"
+              value={selectedProject?.id || ''}
+              onChange={(e) => {
+                const project = projects.find(p => p.id === e.target.value);
+                setSelectedProject(project || null);
+              }}
+              disabled={loadingProjects}
+            >
+              {loadingProjects ? (
+                <option>Carregando...</option>
+              ) : projects.length === 0 ? (
+                <option>Nenhuma obra</option>
+              ) : (
+                projects.map(p => (
+                  <option key={p.id} value={p.id} className="bg-[#0A2E50]">
+                    {p.name}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+        )}
+
         {collapsed && (
           <div className="flex justify-center mt-3">
             <Button
