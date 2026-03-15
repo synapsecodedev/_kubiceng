@@ -2,7 +2,6 @@
 // Adapts the Fastify app to Vercel's serverless request/response model
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { IncomingMessage, ServerResponse } from "http";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { engenhariaRoutes } from "../backend/src/routes/engenharia.routes";
@@ -49,18 +48,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: req.method as any,
       url,
       headers: req.headers as any,
-      payload: req.body ? JSON.stringify(req.body) : undefined,
+      payload: req.body,
     });
-    res.status(response.statusCode).send(response.body);
-  } catch (error) {
-    console.error('Critical Error in Vercel Function:', error);
-    res.status(500).send({
-      message: 'Critical Backend Error',
-      error: String(error),
-      stack: error instanceof Error ? error.stack : undefined
-    });
-  }
-}    res.status(response.statusCode);
+
+    res.status(response.statusCode);
     const contentType = response.headers["content-type"];
     if (contentType) res.setHeader("content-type", contentType);
     res.send(response.body);

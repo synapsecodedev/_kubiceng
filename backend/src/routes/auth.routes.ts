@@ -102,18 +102,23 @@ export async function authRoutes(app: FastifyInstance) {
           });
       }
 
+      console.log('--- Register Request Received ---', request.body);
       const { name, email, password, document, documentType, planSlug } =
         parseResult.data;
 
+      console.log('1. Checking existing user for:', email);
       // Verifica se user já existe
       const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
+        console.log('   User already exists');
         return reply.status(400).send({ message: "Email já cadastrado" });
       }
 
+      console.log('2. Finding plan for slug:', planSlug);
       // Busca o plano escolhido
       const plan = await prisma.plan.findUnique({ where: { slug: planSlug } });
       if (!plan) {
+        console.log('   Plan not found');
         return reply.status(404).send({ message: "Plano não encontrado" });
       }
 
@@ -176,10 +181,14 @@ export async function authRoutes(app: FastifyInstance) {
         },
       };
     } catch (err) {
-      console.error(err);
+      console.error('FATAL REGISTRATION ERROR:', err);
       return reply
         .status(500)
-        .send({ message: "Erro ao registrar usuário", error: String(err) });
+        .send({ 
+          message: "Erro ao registrar usuário", 
+          error: String(err),
+          stack: err instanceof Error ? err.stack : undefined
+        });
     }
   });
 
