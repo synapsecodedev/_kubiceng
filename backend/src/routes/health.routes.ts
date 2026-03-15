@@ -6,7 +6,7 @@ export async function healthRoutes(app: FastifyInstance) {
     try {
       const prisma = getPrisma();
       await prisma.$queryRaw`SELECT 1`;
-      return { status: "ok", database: "connected", version: "1.1.0-fix" };
+      return { status: "ok", database: "connected" };
     } catch (error) {
       console.error("Database connection failed", error);
       return reply.status(500).send({

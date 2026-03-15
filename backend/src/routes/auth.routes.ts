@@ -79,12 +79,8 @@ export async function authRoutes(app: FastifyInstance) {
           : null,
       };
     } catch (err) {
-      console.error('LOGIN ERROR:', err);
-      return reply.status(500).send({ 
-        message: "Erro interno no servidor", 
-        error: String(err),
-        stack: err instanceof Error ? err.stack : undefined
-      });
+      console.error("Erro no login interno", err);
+      return reply.status(500).send({ message: "Erro interno no servidor" });
     }
   });
 
