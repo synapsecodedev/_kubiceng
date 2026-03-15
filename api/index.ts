@@ -11,6 +11,9 @@ let dbUrl = process.env.DATABASE_URL || "";
 if (dbUrl.includes(':5432')) {
   dbUrl = dbUrl.replace(':5432', ':6543');
 }
+if (!dbUrl.includes('pgbouncer=true')) {
+  dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'pgbouncer=true';
+}
 
 // Global Prisma instance
 const prisma = new PrismaClient({
