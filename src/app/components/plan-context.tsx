@@ -38,9 +38,15 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const savedUser = localStorage.getItem('kubic_user');
     const savedSub = localStorage.getItem('kubic_subscription');
 
-    if (savedUser && savedSub) {
-      setUser(JSON.parse(savedUser));
-      setSubscription(JSON.parse(savedSub));
+    if (savedUser && savedSub && savedUser !== 'undefined' && savedSub !== 'undefined') {
+      try {
+        setUser(JSON.parse(savedUser));
+        setSubscription(JSON.parse(savedSub));
+      } catch (err) {
+        console.error('Falha ao carregar sessão salva:', err);
+        localStorage.removeItem('kubic_user');
+        localStorage.removeItem('kubic_subscription');
+      }
     }
     setIsLoading(false);
   }, []);
