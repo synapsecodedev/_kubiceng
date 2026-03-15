@@ -24,7 +24,7 @@ const prisma = new PrismaClient({
 
 const app = Fastify({ logger: false });
 
-// Registration Schema
+// Schemas
 const registerSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
@@ -34,12 +34,17 @@ const registerSchema = z.object({
   planSlug: z.string(),
 });
 
+const loginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(1, "Senha é obrigatória"),
+});
+
 let isReady = false;
 async function buildApp() {
   if (isReady) return;
   await app.register(cors, { origin: "*" });
 
-  // Inline Health Check
+  // Health Check
   app.get("/health", async () => {
     try {
       await prisma.$queryRaw`SELECT 1`;
@@ -49,7 +54,65 @@ async function buildApp() {
     }
   });
 
-  // Inline Registration
+  // Authentication Routes
+  app.post("/auth/login", async (request, reply) => {
+    try {
+      const body = loginSchema.parse(request.body);
+      const { email, password } = body;
+
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          subscription: {
+            include: {
+              plan: {
+                include: {
+                  features: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        return reply.status(401).send({ message: "Credenciais inválidas" });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+      if (!isPasswordValid) {
+        return reply.status(401).send({ message: "Credenciais inválidas" });
+      }
+
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        subscription: user.subscription
+          ? {
+              status: user.subscription.status,
+              plan: user.subscription.plan.name,
+              slug: user.subscription.plan.slug,
+              features: user.subscription.plan.features.reduce(
+                (acc, f) => {
+                  acc[f.module] = f.enabled;
+                  return acc;
+                },
+                {} as Record<string, boolean>,
+              ),
+            }
+          : null,
+      };
+    } catch (err: any) {
+      console.error(err);
+      return reply.status(500).send({ message: "Erro interno no processo de login", error: err.message });
+    }
+  });
+
   app.post("/auth/register", async (request, reply) => {
     try {
       const body = registerSchema.parse(request.body);
@@ -107,6 +170,57 @@ async function buildApp() {
     }
   });
 
+  app.get("/auth/me/:userId", async (request, reply) => {
+    try {
+      const { userId } = z.object({ userId: z.string().uuid() }).parse(request.params);
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          subscription: {
+            include: {
+              plan: {
+                include: {
+                  features: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        return reply.status(404).send({ message: "Usuário não encontrado" });
+      }
+
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        subscription: user.subscription
+          ? {
+              status: user.subscription.status,
+              plan: user.subscription.plan.name,
+              slug: user.subscription.plan.slug,
+              features: user.subscription.plan.features.reduce(
+                (acc, f) => {
+                  acc[f.module] = f.enabled;
+                  return acc;
+                },
+                {} as Record<string, boolean>,
+              ),
+            }
+          : null,
+      };
+    } catch (err: any) {
+      console.error(err);
+      return reply.status(500).send({ message: "Erro ao verificar sessão", error: err.message });
+    }
+  });
+
   await app.ready();
   isReady = true;
 }
@@ -116,6 +230,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await buildApp();
     const url = req.url?.replace(/^\/api/, "") || "/";
     
+    // Fastify's inject handles JSON body automatically
     const response = await app.inject({
       method: req.method as any,
       url,
