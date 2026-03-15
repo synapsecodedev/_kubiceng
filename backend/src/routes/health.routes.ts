@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { getPrisma } from "../lib/prisma";
 
 export async function healthRoutes(app: FastifyInstance) {
-  app.get("/health", async (request, reply) => {
+  app.get('/health', async (_request, reply) => {
     try {
       const prisma = getPrisma();
       await prisma.$queryRaw`SELECT 1`;

@@ -64,7 +64,7 @@ export async function profileRoutes(app: FastifyInstance) {
 
   // POST /profile/upload - Handle image upload to Supabase Storage
   app.post('/profile/upload', async (request, reply) => {
-    const data = await request.file()
+    const data = await (request as any).file()
     if (!data) {
       return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
     }
@@ -78,7 +78,7 @@ export async function profileRoutes(app: FastifyInstance) {
     const fileName = `${userId}-${Date.now()}-${data.filename}`
     const bucket = type === 'avatar' ? 'avatars' : 'logos'
 
-    const { data: uploadData, error } = await supabase.storage
+    const { data: _uploadData, error } = await supabase.storage
       .from(bucket)
       .upload(fileName, fileBuffer, {
         contentType: data.mimetype,

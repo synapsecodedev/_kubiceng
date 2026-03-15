@@ -128,7 +128,7 @@ export async function adminRoutes(app: FastifyInstance) {
   })
 
   // Atualizar Plano (features e limites)
-  app.patch('/admin/plans/:id', async (request, reply) => {
+  app.patch('/admin/plans/:id', async (request, _reply) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(request.params)
     const planSchema = z.object({
       price: z.number().optional(),

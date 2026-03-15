@@ -4,10 +4,15 @@ import { Badge } from '@/app/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { DollarSign, TrendingDown, TrendingUp, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+} from 'recharts';
+
+const XAxisAny = XAxis as any;
+const YAxisAny = YAxis as any;
 import { useEffect, useState } from 'react';
 import {
-  getContasPagar, pagarConta, createContaPagar,
+  getContasPagar, pagarConta,
   getMedicoes, createMedicao, aprovarMedicao,
   getFluxoCaixa,
   ContaPagar, Medicao, FluxoCaixa, Project
@@ -252,8 +257,8 @@ export function FinanceiroModule() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={fluxo}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis label={{ value: 'Valores (R$ mil)', angle: -90, position: 'insideLeft' }} />
+                  <XAxisAny dataKey="mes" />
+                  <YAxisAny label={{ value: 'Valores (R$ mil)', angle: -90, position: 'insideLeft' }} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="receita" fill="#4A9EFF" name="Receita" />

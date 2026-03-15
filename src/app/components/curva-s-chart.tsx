@@ -1,5 +1,8 @@
 import { Card } from '@/app/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const XAxisAny = XAxis as any;
+const YAxisAny = YAxis as any;
 import { useEffect, useState } from 'react';
 import { getSchedule } from '@/services/api';
 import { useProject } from './project-context';
@@ -95,8 +98,8 @@ export function CurvaSChart() {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="mes" {...({} as any)} />
-            <YAxis label={{ value: '% Concluído', angle: -90, position: 'insideLeft' }} {...({} as any)} />
+            <XAxisAny dataKey="mes" />
+            <YAxisAny label={{ value: '% Concluído', angle: -90, position: 'insideLeft' }} />
             <Tooltip />
             <Legend />
             <Line type="monotone" dataKey="planejado" stroke="#94a3b8" strokeWidth={2} name="Planejado" strokeDasharray="5 5" />

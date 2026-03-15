@@ -2,7 +2,7 @@ import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { Camera, Users, Package as PackageIcon, FileCheck, CloudSun, CloudRain, Plus, Hammer, CheckCircle } from 'lucide-react';
+import { Camera, Users, Package as PackageIcon, FileCheck, CloudSun, CloudRain, Hammer, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import { useEffect, useState } from 'react';
 import { getRdos, createRdo, getFvs, assinarFvs, getEstoque, entradaEstoque, saidaEstoque, Rdo, FichaVerificacao, ItemEstoque, Project } from '@/services/api';
@@ -130,7 +130,7 @@ export function ExecucaoModule() {
   const [fvsList, setFvsList] = useState<FichaVerificacao[]>([]);
   const [estoque, setEstoque] = useState<ItemEstoque[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeEstoque, setActiveEstoque] = useState<ItemEstoque | null>(null);
+  // const [activeEstoque, setActiveEstoque] = useState<ItemEstoque | null>(null);
 
   const load = async () => {
     setLoading(true);

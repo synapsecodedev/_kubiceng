@@ -36,7 +36,7 @@ export async function engenhariaRoutes(app: FastifyInstance) {
   })
 
   // PUT update project
-  app.put('/projects/:id', async (request, reply) => {
+  app.put('/projects/:id', async (request, _reply) => {
     const { id } = request.params as { id: string }
     const schema = z.object({
       name: z.string().optional(),
@@ -49,10 +49,10 @@ export async function engenhariaRoutes(app: FastifyInstance) {
   })
 
   // DELETE project
-  app.delete('/projects/:id', async (request, reply) => {
+  app.delete('/projects/:id', async (request, _reply) => {
     const { id } = request.params as { id: string }
     await prisma.project.delete({ where: { id } })
-    return reply.code(204).send()
+    return _reply.code(204).send()
   })
 
   // GET schedule items for a project
@@ -62,7 +62,7 @@ export async function engenhariaRoutes(app: FastifyInstance) {
   })
 
   // POST schedule item
-  app.post('/projects/:id/schedule', async (request, reply) => {
+  app.post('/projects/:id/schedule', async (request, _reply) => {
     const { id } = request.params as { id: string }
     const schema = z.object({
       stage: z.string(),
@@ -82,7 +82,7 @@ export async function engenhariaRoutes(app: FastifyInstance) {
         status: body.status,
       },
     })
-    return reply.code(201).send(item)
+    return _reply.code(201).send(item)
   })
 
   // PUT update schedule item progress

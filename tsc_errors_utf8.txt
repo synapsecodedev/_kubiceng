@@ -1,0 +1,37 @@
+﻿backend/src/routes/admin.routes.ts(131,49): error TS6133: 'reply' is declared but its value is never read.
+backend/src/routes/auth.routes.ts(3,8): error TS1259: Module '"D:/_RodrigoPiresDev/_programacao/_kubiceng/backend/node_modules/bcryptjs/umd/index"' can only be default-imported using the 'allowSyntheticDefaultImports' flag
+backend/src/routes/engenharia.routes.ts(39,44): error TS6133: 'reply' is declared but its value is never read.
+backend/src/routes/health.routes.ts(5,29): error TS6133: 'request' is declared but its value is never read.
+backend/src/routes/profile.routes.ts(67,32): error TS2339: Property 'file' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+backend/src/routes/profile.routes.ts(81,19): error TS6133: 'uploadData' is declared but its value is never read.
+src/app/App.test.tsx(1,37): error TS6133: 'waitFor' is declared but its value is never read.
+src/app/components/auth-card.tsx(1,8): error TS1259: Module '"D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@types/react/index"' can only be default-imported using the 'allowSyntheticDefaultImports' flag
+src/app/components/curva-s-chart.tsx(98,13): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+src/app/components/curva-s-chart.tsx(98,14): error TS2786: 'XAxis' cannot be used as a JSX component.
+  Its type 'typeof XAxis' is not a valid JSX element type.
+    Type 'typeof XAxis' is not assignable to type 'new (props: any, context: any) => Component<any, any, any>'.
+      Type 'XAxis' is missing the following properties from type 'Component<any, any, any>': context, setState, forceUpdate, props, state
+src/app/components/curva-s-chart.tsx(99,13): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+src/app/components/curva-s-chart.tsx(99,14): error TS2786: 'YAxis' cannot be used as a JSX component.
+  Its type 'typeof YAxis' is not a valid JSX element type.
+    Type 'typeof YAxis' is not assignable to type 'new (props: any, context: any) => Component<any, any, any>'.
+      Type 'YAxis' is missing the following properties from type 'Component<any, any, any>': context, setState, forceUpdate, props, state
+src/app/components/execucao-module.tsx(5,81): error TS6133: 'Plus' is declared but its value is never read.
+src/app/components/execucao-module.tsx(133,10): error TS6133: 'activeEstoque' is declared but its value is never read.
+src/app/components/execucao-module.tsx(133,25): error TS6133: 'setActiveEstoque' is declared but its value is never read.
+src/app/components/feature-gate.tsx(1,8): error TS1259: Module '"D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@types/react/index"' can only be default-imported using the 'allowSyntheticDefaultImports' flag
+src/app/components/figma/ImageWithFallback.tsx(1,8): error TS1259: Module '"D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@types/react/index"' can only be default-imported using the 'allowSyntheticDefaultImports' flag
+src/app/components/financeiro-module.tsx(10,31): error TS6133: 'createContaPagar' is declared but its value is never read.
+src/app/components/financeiro-module.tsx(255,19): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+src/app/components/financeiro-module.tsx(255,20): error TS2786: 'XAxis' cannot be used as a JSX component.
+  Its type 'typeof XAxis' is not a valid JSX element type.
+    Type 'typeof XAxis' is not assignable to type 'new (props: any, context: any) => Component<any, any, any>'.
+      Type 'XAxis' is missing the following properties from type 'Component<any, any, any>': context, setState, forceUpdate, props, state
+src/app/components/financeiro-module.tsx(256,19): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+src/app/components/financeiro-module.tsx(256,20): error TS2786: 'YAxis' cannot be used as a JSX component.
+  Its type 'typeof YAxis' is not a valid JSX element type.
+    Type 'typeof YAxis' is not assignable to type 'new (props: any, context: any) => Component<any, any, any>'.
+      Type 'YAxis' is missing the following properties from type 'Component<any, any, any>': context, setState, forceUpdate, props, state
+src/app/components/plan-context.tsx(1,8): error TS1259: Module '"D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@types/react/index"' can only be default-imported using the 'allowSyntheticDefaultImports' flag
+src/app/components/project-context.tsx(1,8): error TS1259: Module '"D:/_RodrigoPiresDev/_programacao/_kubiceng/node_modules/@types/react/index"' can only be default-imported using the 'allowSyntheticDefaultImports' flag
+src/app/components/project-context.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
