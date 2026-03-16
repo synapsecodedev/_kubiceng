@@ -291,8 +291,10 @@ export function EngenhariaModule() {
         <TabsContent value="cronograma" className="space-y-4">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Cronograma Físico - Gantt Interativo</h3>
-            {cronograma.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">Nenhuma etapa cadastrada para este projeto.</p>
+            {!selectedProject ? (
+               <p className="text-sm text-gray-500 text-center py-8 italic">Selecione um projeto na aba "GED" ou no menu lateral para ver o cronograma.</p>
+            ) : cronograma.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-8">Nenhuma etapa cadastrada para {selectedProject.name}.</p>
             ) : (
               <div className="space-y-4">
                 {cronograma.map((etapa) => {
@@ -327,8 +329,10 @@ export function EngenhariaModule() {
         <TabsContent value="orcamento" className="space-y-4">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Orçamento Executivo - Curva ABC</h3>
-            {orcamento.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">Nenhum item de orçamento cadastrado.</p>
+            {!selectedProject ? (
+               <p className="text-sm text-gray-500 text-center py-8 italic">Selecione um projeto na aba "GED" ou no menu lateral para ver o orçamento.</p>
+            ) : orcamento.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-8">Nenhum item de orçamento cadastrado para {selectedProject.name}.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">

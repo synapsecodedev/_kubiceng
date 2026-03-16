@@ -50,19 +50,19 @@ function buildCurvaS(scheduleItems: { stage: string; startDate: string; endDate:
 export function CurvaSChart() {
   const [data, setData] = useState<CurvaPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const { projects, selectedProject } = useProject();
+  const { selectedProject } = useProject();
 
   useEffect(() => {
     async function loadData() {
+      if (!selectedProject) {
+        setData([]);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const projectToUse = selectedProject || projects[0];
-        if (!projectToUse) {
-          setLoading(false);
-          return;
-        }
-
-        const sched = await getSchedule(projectToUse.id);
+        const sched = await getSchedule(selectedProject.id);
         if (sched && sched.length > 0) {
           setData(buildCurvaS(sched));
         } else {
@@ -77,7 +77,7 @@ export function CurvaSChart() {
     }
 
     loadData();
-  }, [selectedProject, projects]);
+  }, [selectedProject?.id]);
 
   return (
     <Card className="p-6">
@@ -90,9 +90,13 @@ export function CurvaSChart() {
         <div className="h-[300px] flex items-center justify-center text-sm text-gray-500">
           Carregando dados do cronograma...
         </div>
+      ) : !selectedProject ? (
+        <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg text-sm text-gray-500">
+          Selecione uma obra no menu lateral para visualizar a Curva S.
+        </div>
       ) : data.length === 0 ? (
         <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg text-sm text-gray-500">
-          Sem dados de cronograma disponíveis para gerar a Curva S.
+          Sem dados de cronograma disponíveis para gerar a Curva S de {selectedProject.name}.
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>

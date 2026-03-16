@@ -3,6 +3,7 @@ import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { ShoppingCart, CheckCircle, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import {
   getRequisicoes, createRequisicao, aprovarRequisicao,
@@ -90,8 +91,24 @@ export function SuprimentosModule() {
     }
   }, [selectedProject?.id]);
 
-  const handleAprovar = async (id: string) => { await aprovarRequisicao(id); load(); };
-  const handleSelecionar = async (cotacaoId: string) => { await selecionarCotacao(cotacaoId); load(); };
+  const handleAprovar = async (id: string) => { 
+    try {
+      await aprovarRequisicao(id); 
+      toast.success('Requisição aprovada com sucesso!');
+      load(); 
+    } catch (err) {
+      toast.error('Erro ao aprovar requisição.');
+    }
+  };
+  const handleSelecionar = async (cotacaoId: string) => { 
+    try {
+      await selecionarCotacao(cotacaoId); 
+      toast.success('Cotação selecionada!');
+      load(); 
+    } catch (err) {
+      toast.error('Erro ao selecionar cotação.');
+    }
+  };
 
   const statusConfig = {
     pendente_aprovacao: { label: 'Pendente Aprovação', color: 'bg-yellow-100 text-yellow-800', icon: Clock },

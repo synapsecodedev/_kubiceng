@@ -116,13 +116,21 @@ export function SuperAdminModule({
           assinaturasTrial: 0,
           mrr: 0
         });
-      } finally {
-        // isLoading is not used in this version
       }
     }
 
     fetchData();
   }, [adminUser]);
+
+  const handleUpdateUserStatus = async (userId: string, status: any) => {
+    if (!adminUser?.id) return;
+    try {
+      await updateSubscriptionStatus(adminUser.id, userId, status);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, status } : u));
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+    }
+  };
 
   const filteredUsers = users.filter(u => 
     u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -306,12 +314,7 @@ export function SuperAdminModule({
                       <td className="px-6 py-4 text-right">
                         <DropdownActions 
                           user={user} 
-                          onUpdate={async (status) => {
-                            if (!adminUser?.id) return;
-                            await updateSubscriptionStatus(adminUser.id, user.id, status);
-                            // Refresh logic would go here
-                            window.location.reload(); // Simple refresh for now
-                          }} 
+                          onUpdate={(status) => handleUpdateUserStatus(user.id, status)} 
                         />
                       </td>
                     </tr>

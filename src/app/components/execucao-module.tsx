@@ -4,6 +4,7 @@ import { Badge } from '@/app/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { Camera, Users, Package as PackageIcon, FileCheck, CloudSun, CloudRain, Hammer, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { getRdos, createRdo, getFvs, assinarFvs, getEstoque, entradaEstoque, saidaEstoque, Rdo, FichaVerificacao, ItemEstoque, Project } from '@/services/api';
 import { useProject } from './project-context';
@@ -149,8 +150,13 @@ export function ExecucaoModule() {
   useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handleAssinar = async (id: string) => {
-    await assinarFvs(id);
-    load();
+    try {
+      await assinarFvs(id);
+      toast.success('Fiche de Verificação assinada com sucesso!');
+      load();
+    } catch (err) {
+      toast.error('Erro ao assinar ficha.');
+    }
   };
 
   return (

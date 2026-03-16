@@ -10,6 +10,7 @@ import {
 
 const XAxisAny = XAxis as any;
 const YAxisAny = YAxis as any;
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import {
   getContasPagar, pagarConta,
@@ -93,13 +94,23 @@ export function FinanceiroModule() {
   useEffect(() => { load(); }, [selectedProject?.id]);
 
   const handlePagar = async (id: string) => {
-    await pagarConta(id);
-    load();
+    try {
+      await pagarConta(id);
+      toast.success('Conta marcada como paga!');
+      load();
+    } catch (err) {
+      toast.error('Erro ao processar pagamento.');
+    }
   };
 
   const handleAprovar = async (id: string) => {
-    await aprovarMedicao(id);
-    load();
+    try {
+      await aprovarMedicao(id);
+      toast.success('Medição aprovada com sucesso!');
+      load();
+    } catch (err) {
+      toast.error('Erro ao aprovar medição.');
+    }
   };
 
   const saldoDisponivel = medicoes.filter((m: Medicao) => m.status === 'aprovado').reduce((s: number, m: Medicao) => s + m.liquido, 0);
